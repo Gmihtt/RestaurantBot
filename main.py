@@ -1,23 +1,50 @@
+import asyncio
+
+import typing
+
+from telebot.asyncio_filters import StateFilter
+from telebot.asyncio_storage import StateMemoryStorage
+
+from tgbot.commands.commands import send_welcome, send_help
+
+# handlers
+from tgbot.handlers.admin import admin_user
+
+# states
+from tgbot.states.user_state import UserState
+
+# utils
+from tgbot.utils.database import Database
+
+# telebot
 from telebot.async_telebot import AsyncTeleBot
+from telebot.types import Message
+# config
+from tgbot import config
 
-API_TOKEN = '5997480587:AAHDMpfgj-sUXkjfnES_umWbLgQU1AR4H_s'
+db = Database()
 
-bot = AsyncTeleBot(API_TOKEN)
-
-
-# Handle '/start' and '/help'
-@bot.message_handler(commands=['help', 'start'])
-def send_welcome(message):
-    bot.reply_to(message, """\
-Hi there, I am EchoBot.
-I am here to echo your kind words back to you. Just say anything nice and I'll say the exact same thing to you!\
-""")
+bot = AsyncTeleBot(config.TOKEN, state_storage=StateMemoryStorage())
 
 
-# Handle all other messages with content_type 'text' (content_types defaults to ['text'])
-@bot.message_handler(func=lambda message: True)
-def echo_message(message):
-    bot.reply_to(message, message.text)
+def register_handlers():
+    bot.register_message_handler(admin_user, commands=['start'], admin=True, pass_bot=True)
+    bot.register_message_handler(send_welcome, commands=['start', 'restart'], pass_bot=True)
+    bot.register_message_handler(send_help, commands=['help'], pass_bot=True)
 
 
-bot.infinity_polling()
+register_handlers()
+
+
+@bot.message_handler(state=UserState.START)
+async def echo_message(message: Message):
+    await bot.reply_to(message, message.text)
+
+
+async def run():
+    await bot.polling(non_stop=True)
+
+
+bot.add_custom_filter(StateFilter(bot))
+
+asyncio.run(run())
