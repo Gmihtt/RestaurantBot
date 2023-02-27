@@ -1,2 +1,1 @@
-TeleBot - ERROR - Unknown error: TimeoutError
-TeleBot - ERROR - Request timeout. Request: method=get url=getUpdates params=<aiohttp.formdata.FormData object at 0x10bbc6e20> files=None request_timeout=300
+root - INFO - add: {'name': 'test_name', 'city': 'test_city', 'place_type': 0, 'place': {'menu': '', 'mid_price': None, 'business_lunch': False, 'business_lunch_price': None, 'kitchen': 'china'}, 'address': 'addr', 'coordinates': (5.0, 5.0), 'photos': None, 'telephone': '+79312075207', 'url': None, 'work_interval': '17-20', 'description': None, 'last_modify_id': 381873540}

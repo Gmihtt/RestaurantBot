@@ -10,8 +10,8 @@ class Database:
         logging.basicConfig(filename='db.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
                             level=logging.INFO)
         self.client = MongoClient('localhost', 27017)
-        self.db = self.client.tgbot
-        self.places = self.db.tgbot_collections
+        self.db = self.client.tgbot  # init db
+        self.places = self.db.places  # init places collections
         self.places.create_index([("coordinates", GEO2D)])
 
     def add_place(self, place: Place) -> str:
