@@ -1,0 +1,2 @@
+TeleBot - ERROR - Unknown error: TimeoutError
+TeleBot - ERROR - Request timeout. Request: method=get url=getUpdates params=<aiohttp.formdata.FormData object at 0x10bbc6e20> files=None request_timeout=300

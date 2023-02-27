@@ -9,6 +9,7 @@ from tgbot.states.user_state import UserState
 
 async def send_welcome(message: Message, bot: AsyncTeleBot):
     await bot.set_state(message.from_user.id, UserState.START, message.chat.id)
+    print(db.find_close_place([2, 2], 1))
     await bot.reply_to(message, """
     Привет!\n
     Выбери место из списка любимых или группы, а еще можно найти новое с помощью поиска
@@ -30,7 +31,7 @@ async def send_help(message: Message, bot: AsyncTeleBot):
                 kitchen="china"
             ),
             address="addr",
-            coordinates=(1.0, 1.0),
+            coordinates=(5.0, 5.0),
             photos=None,
             telephone="+79312075207",
             url=None,
