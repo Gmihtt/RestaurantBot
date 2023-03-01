@@ -76,7 +76,11 @@ class Database:
 
     def find_close_place(self, coordinates: Tuple[float, float], skip: int, limit: int) -> List[Place]:
         q = {"coordinates": {"$near": coordinates}}
-        return list(map(convert_doc_to_place, self.places.find(q, skip=skip, limit=limit)))
+        res_q = self.places.find(q, skip=skip, limit=limit)
+        res = []
+        for doc in res_q:
+            res.append(convert_doc_to_place(doc))
+        return res
 
     def find_place(self, place_id: str) -> Optional[Place]:
         val = dict(self.places.find_one({"_id": ObjectId(place_id)}))

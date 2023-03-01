@@ -21,6 +21,10 @@ class Restaurant(TypedDict):
     kitchen: Optional[str]
 
 
+def pretty_show_restaurant(rest: Restaurant) -> str:
+    return "скоро появится реализация"
+
+
 class Place(TypedDict):
     _id: Optional[str]
     name: str
@@ -35,3 +39,26 @@ class Place(TypedDict):
     work_interval: str
     description: Optional[str]
     last_modify_id: int
+
+
+def pretty_show_place(place: Place) -> str:
+    name = "Название: " + place['name'] + '\n'
+    city = "Город: " + place['city'] + '\n'
+    place_str = ""
+    if place['place_type'] == Restaurant:
+        place_str = pretty_show_restaurant(place['place']) + '\n'
+    address = "Адресс" + place['address'] + '\n'
+    telephone = "Телефон" + place['telephone'] + '\n'
+    url = "" if place['url'] is None else place['url'] + '\n'
+    work_interval = "Время работы" + place['work_interval'] + '\n'
+    description = "" if place['description'] is None else place['description'] + '\n'
+    return (
+        name +
+        city +
+        place_str +
+        address +
+        telephone +
+        url +
+        work_interval +
+        description
+    )

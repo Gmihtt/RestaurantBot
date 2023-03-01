@@ -16,7 +16,7 @@ from telebot.async_telebot import AsyncTeleBot
 from tgbot import config
 from tgbot.utils.functions import filter_place_prefix
 
-bot = AsyncTeleBot(config.TOKEN, state_storage=StateMemoryStorage())
+bot = AsyncTeleBot(config.TOKEN)
 
 
 def register_handlers():

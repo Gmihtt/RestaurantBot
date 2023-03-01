@@ -1,9 +1,11 @@
+from telebot.types import CallbackQuery
+
 from tgbot.types.types import Place, Restaurant, PlaceType
-from tgbot.utils.database import db, convert_place_to_doc
+from tgbot.utils.database import db
 
 
-def filter_place_prefix(call: str):
-    return call.find("place_id") != -1
+def filter_place_prefix(call: CallbackQuery):
+    return call.data.find("place_id") != -1
 
 
 def generate_places(count: int):
@@ -30,4 +32,3 @@ def generate_places(count: int):
             last_modify_id=0,
         )
         db.add_place(place)
-
