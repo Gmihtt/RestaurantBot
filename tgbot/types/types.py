@@ -1,3 +1,4 @@
+from enum import IntEnum
 from typing import TypedDict, Tuple, Optional, Union, List
 
 
@@ -8,7 +9,7 @@ class User(TypedDict):
     chat_id: str
 
 
-class PlaceType:
+class PlaceType(IntEnum):
     RESTAURANT = 0
 
 
@@ -21,6 +22,7 @@ class Restaurant(TypedDict):
 
 
 class Place(TypedDict):
+    _id: Optional[str]
     name: str
     city: str
     place_type: PlaceType

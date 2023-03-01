@@ -1,43 +1,48 @@
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import Message
+from telebot.types import Message, CallbackQuery
 
-from tgbot.types.types import Place, Restaurant, PlaceType
-from tgbot.utils.database import Database, db
-
-from tgbot.states.user_state import UserState
+from tgbot.utils.database import db, storage
+import tgbot.keyboard.keyboard as keyboard
+from tgbot.utils.functions import generate_places
 
 
 async def send_welcome(message: Message, bot: AsyncTeleBot):
-    await bot.set_state(message.from_user.id, UserState.START, message.chat.id)
-    print(db.find_close_place([2, 2], 1))
+    storage.add(str(message.from_user.id), "0,10")
     await bot.reply_to(message, """
-    Привет!\n
-    Выбери место из списка любимых или группы, а еще можно найти новое с помощью поиска
+    Привет!\nПришли мне свою геопозицию и я покажу какие места есть рядом с тобой:
     """)
 
 
+async def show_places(message, bot: AsyncTeleBot):
+    print("HELLO")
+    val = storage.get(str(message.from_user.id))
+    if val is None:
+        raise Exception("storage return None")
+    new_val = val.split(",")
+    if len(new_val) != 2:
+        raise Exception("storage return: " + val)
+    skip, limit = int(new_val[0]), int(new_val[1])
+    print("{0}, {1}".format(message.location.longitude, message.location.latitude))
+    places = db.find_close_place((message.location.longitude, message.location.latitude), skip=skip, limit=limit)
+    print(places)
+    if len(places) == 0:
+        raise Exception("db return empty places list")
+    start = skip == 0 and limit == 10
+    await bot.reply_to(message, """
+    Вот места рядом с вами, нажмите на любое из них для подробной информации
+    """, reply_markup=keyboard.show_places(places, start))
+    storage.add(str(message.from_user.id), str(skip) + "," + str(limit + 10))
+
+
+async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
+    place_id = call.message.text[len("place_name"):]
+    place = db.find_place(place_id)
+    if place is None:
+        raise Exception("db return None place")
+    await bot.reply_to(call.message, str(place), reply_markup=keyboard.show_place())
+
+
 async def send_help(message: Message, bot: AsyncTeleBot):
-    await bot.set_state(message.from_user.id, UserState.HELP, message.chat.id)
-    db.add_place(
-        Place(
-            name="test_name",
-            city="test_city",
-            place_type=PlaceType.RESTAURANT,
-            place=Restaurant(
-                menu="",
-                mid_price=None,
-                business_lunch=False,
-                business_lunch_price=None,
-                kitchen="china"
-            ),
-            address="addr",
-            coordinates=(5.0, 5.0),
-            photos=None,
-            telephone="+79312075207",
-            url=None,
-            work_interval="17-20",
-            description=None,
-            last_modify_id=message.from_user.id
-        )
-    )
+    generate_places(100)
+    await bot.set_state(message.from_user.id, message.chat.id)
     await bot.reply_to(message, "help")
