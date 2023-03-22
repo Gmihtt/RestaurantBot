@@ -4,10 +4,6 @@ from tgbot.types.types import Place, Restaurant, PlaceType
 from tgbot.utils.database import db
 
 
-def filter_place_prefix(call: CallbackQuery):
-    return call.data.find("place_id") != -1
-
-
 def generate_places(count: int):
     for i in range(count):
         place = Place(

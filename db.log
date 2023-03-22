@@ -1,0 +1,4 @@
+root - INFO - user_id: 381873540
+root - INFO - user_name: Crocodile_T
+TeleBot - ERROR - Unknown error: TimeoutError
+TeleBot - ERROR - Request timeout. Request: method=get url=getUpdates params=<aiohttp.formdata.FormData object at 0x10c29bf70> files=None request_timeout=300
