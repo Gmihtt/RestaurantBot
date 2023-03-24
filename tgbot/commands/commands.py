@@ -14,18 +14,21 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
     user = User(
         _id=None,
         user_tg_id=user_id,
+        chat_id=message.chat.id,
         username=message.from_user.username
     )
     db.add_user(user)
-    if message.from_user.id in main_admins or db.is_admin(user_id):
+    if user_id in main_admins or db.is_admin(user_id):
         await bot.reply_to(message, """
         \nВыберете интерфейс
         """, reply_markup=keyboard.show_admins_chose_buttons())
     else:
         await send_welcome(message, bot)
+        print(user)
 
 
 async def send_welcome(message: Message, bot: AsyncTeleBot):
+    print("HELLLo")
     await bot.reply_to(message, """
     \nПришли мне свое местоположение и я покажу какие места есть рядом с тобой
     """, reply_markup=keyboard.show_location_button())

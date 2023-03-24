@@ -1,4 +1,6 @@
-from telebot.types import CallbackQuery
+from telebot.types import CallbackQuery, Message
+
+from tgbot.utils.database import storage
 
 
 def check_user(call: CallbackQuery):
@@ -75,3 +77,23 @@ def check_active_users(call: CallbackQuery):
 
 def check_all_places(call: CallbackQuery):
     return call.data == "all_places"
+
+
+def check_post_name(message: Message):
+    user_id = str(message.from_user.id)
+    name = storage.get('admin_post' + user_id)
+    return name is not None and name == "name"
+
+
+def check_post_body(message: Message):
+    user_id = str(message.from_user.id)
+    name = storage.get('admin_post' + user_id)
+    return name is not None
+
+
+def check_push_post(call: CallbackQuery):
+    return call.data == "push_post"
+
+
+def post_id(call: CallbackQuery):
+    return call.data.find("post_id") != -1

@@ -1,6 +1,9 @@
+import os
 from typing import List, Tuple, Optional, TypedDict, Dict, Any
 
 import boto3
+import pymongo
+from botocore.exceptions import ClientError
 from bson import ObjectId
 from pymongo import MongoClient, GEO2D
 
@@ -22,6 +25,9 @@ class Storage:
 
     def get(self, key: str) -> Optional[str]:
         return self.r.get(key)
+
+    def delete(self, key: str):
+        self.r.delete(key)
 
 
 class Database:
@@ -56,21 +62,22 @@ class Database:
         return res
 
     def find_place(self, place_id: str) -> Optional[Place]:
-        val = dict(self.places.find_one({"_id": ObjectId(place_id)}))
+        val = self.places.find_one({"_id": ObjectId(place_id)})
         if val is None:
             return None
         else:
-            return convert_doc_to_place(val)
+            return convert_doc_to_place(dict(val))
 
     def get_places_count(self) -> int:
         return self.places.count_documents({})
 
     def add_user(self, user: User) -> str:
         logging.info("add user: " + str(user))
-        val = convert_user_to_doc(user)
-        return self.users.insert_one(val).inserted_id
+        if self.get_user_by_tg_id(user["user_tg_id"]) is None:
+            val = convert_user_to_doc(user)
+            return self.users.insert_one(val).inserted_id
 
-    def get_users(self) -> [User]:
+    def get_all_users(self) -> [User]:
         users = self.users.find({})
         res = []
         for user in users:
@@ -78,25 +85,25 @@ class Database:
         return res
 
     def get_user_by_id(self, _id: str) -> Optional[User]:
-        val = dict(self.users.find_one({"_id": _id}))
+        val = self.users.find_one({"_id": ObjectId(_id)})
         if val is None:
             return None
         else:
-            return convert_doc_to_user(val)
+            return convert_doc_to_user(dict(val))
 
     def get_user_by_tg_id(self, user_tg_id: int) -> Optional[User]:
-        val = dict(self.users.find_one({"user_tg_id": user_tg_id}))
+        val = self.users.find_one({"user_tg_id": user_tg_id})
         if val is None:
             return None
         else:
-            return convert_doc_to_user(val)
+            return convert_doc_to_user(dict(val))
 
     def get_user_by_username(self, username: str) -> Optional[User]:
-        val = dict(self.users.find_one({"username": username}))
+        val = self.users.find_one({"username": username})
         if val is None:
             return None
         else:
-            return convert_doc_to_user(val)
+            return convert_doc_to_user(dict(val))
 
     def add_admin(self, username: str) -> Optional[str]:
         user = self.get_user_by_username(username)
@@ -109,11 +116,11 @@ class Database:
             return self.admins.insert_one(val).inserted_id
 
     def find_admin(self, _id: str) -> Optional[Admin]:
-        val = dict(self.admins.find_one({"_id": _id}))
+        val = self.admins.find_one({"_id": ObjectId(_id)})
         if val is None:
             return None
         else:
-            return convert_doc_to_admin(val)
+            return convert_doc_to_admin(dict(val))
 
     def delete_admin(self, username: str) -> bool:
         user = self.get_user_by_username(username)
@@ -126,11 +133,12 @@ class Database:
             if self.find_admin(_id) is None:
                 return False
             else:
-                self.admins.delete_one({"_id": val._id})
+                self.admins.delete_one({"_id": val["_id"]})
                 return True
 
     def is_admin(self, user_id: int):
         user = self.get_user_by_tg_id(user_id)
+        print(user)
         if user is None:
             return False
         else:
@@ -141,37 +149,54 @@ class Database:
         val = convert_post_to_doc(post)
         return self.posts.insert_one(val).inserted_id
 
-    def find_post_by_name(self, post: Post) -> Optional[Post]:
-        val = dict(self.posts.find_one({"name": post.name}))
+    def find_post_by_name(self, post_name) -> Optional[Post]:
+        val = self.posts.find_one({"name": post_name})
         if val is None:
             return None
         else:
-            return convert_doc_to_post(val)
+            return convert_doc_to_post(dict(val))
 
-    def find_post_by_id(self, post: Post) -> Optional[Post]:
-        val = dict(self.posts.find_one({"_id": post._id}))
+    def find_post_by_id(self, post_id: str) -> Optional[Post]:
+        val = self.posts.find_one({"_id": ObjectId(post_id)})
+        print(val)
         if val is None:
             return None
         else:
-            return convert_doc_to_post(val)
+            print(val)
+            return convert_doc_to_post(dict(val))
 
     def update_post(self, post: Post):
         val = convert_post_to_doc(post)
-        return self.posts.update_one({"_id": post._id}, val)
+        return self.posts.update_one({"_id": ObjectId(post["_id"])}, val)
 
     def delete_post(self, post: Post):
-        val = convert_post_to_doc(post)
-        return self.posts.delete_one({"_id": post._id})
+        return self.posts.delete_one({"_id": ObjectId(post["_id"])})
+
+    def get_posts(self) -> [Post]:
+        posts = self.posts.find({}).limit(11).sort('date', pymongo.DESCENDING)
+        res = []
+        for post in posts:
+            res.append(convert_doc_to_post(post))
+        return res
 
 
 class YandexS3:
     def __init__(self) -> None:
-        session = boto3.session.Session()
-        self.s3 = session.client(
+        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = os.getcwd() + "/.aws/credentials"
+        self.session = boto3.session.Session()
+        self.s3 = self.session.client(
             service_name='s3',
             endpoint_url='https://storage.yandexcloud.net'
         )
-        self.bucket = self.s3.create_bucket(Bucket=config.bucket)
+        res = self.s3.list_buckets()
+        is_create = False
+        for bucket in res['Buckets']:
+            if bucket["Name"] == config.bucket:
+                self.bucket = config.bucket
+                is_create = True
+                break
+        if not is_create:
+            self.bucket = self.s3.create_bucket(Bucket=config.bucket)
 
     def save_object(self, string: str, hash: str):
         return self.s3.put_object(Bucket=self.bucket, Key=hash, Body=string, StorageClass='STANDARD')

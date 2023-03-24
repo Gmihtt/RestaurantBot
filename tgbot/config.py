@@ -7,5 +7,5 @@ posts_collection = 'posts'
 support = 'https://t.me/durahan'
 username = "dAKB4phxFx"
 password = "EIamC1W3jw"
-bucket = "tgbot"
-main_admins = [381873540, 138769502]
+bucket = "gmihtt-tgbot"
+main_admins = {381873540, 138769502}

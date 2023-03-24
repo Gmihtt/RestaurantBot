@@ -135,7 +135,6 @@ class Post(TypedDict):
     name: str
     body: str
     count_users: int
-    message_id: int
     user_id: int
     date: datetime
 
@@ -146,7 +145,6 @@ def convert_doc_to_post(d: Dict[str, Any]) -> Post:
         name=d["name"],
         body=d["body"],
         count_users=d["count_users"],
-        message_id=d["message_id"],
         user_id=d["user_id"],
         date=d["date"]
     )
@@ -156,3 +154,11 @@ def convert_post_to_doc(u: Post) -> Dict[str, Any]:
     d = dict(u)
     d.pop('_id')
     return d
+
+
+def pretty_show_post(post: Post) -> str:
+    id = "id поста: " + str(post["_id"]) + '\n'
+    name = "название поста: " + post["name"] + '\n'
+    count_users = "количество пользователей до которых пост дошел: " + str(post["count_users"]) + '\n'
+    date = "создан: " + str(post["date"])
+    return id + name + count_users + date
