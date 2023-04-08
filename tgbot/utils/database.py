@@ -10,8 +10,9 @@ from pymongo import MongoClient, GEO2D
 from tgbot import config
 from tgbot.types.types import Place, User, convert_place_to_doc, convert_doc_to_place, \
     convert_user_to_doc, convert_doc_to_user, Admin, convert_admin_to_doc, convert_doc_to_admin, Post, \
-    convert_post_to_doc, convert_doc_to_post
-from tgbot.config import mongo_database, places_collection, users_collection, admins_collection, posts_collection
+    convert_post_to_doc, convert_doc_to_post, City, convert_doc_to_city
+from tgbot.config import mongo_database, places_collection, users_collection, admins_collection, posts_collection, \
+    cities_collection
 import logging
 import redis
 
@@ -19,6 +20,9 @@ import redis
 class Storage:
     def __init__(self) -> None:
         self.r = redis.StrictRedis(host="localhost", port=6379, password="", decode_responses=True)
+        keys = self.r.keys('*')
+        if keys:
+            self.r.delete(*keys)
 
     def add(self, key: str, val: str) -> bool:
         return self.r.set(key, val)
@@ -39,6 +43,7 @@ class Database:
         self.users = self.db[users_collection]
         self.admins = self.db[admins_collection]
         self.posts = self.db[posts_collection]
+        self.cities = self.db[cities_collection]
 
     def add_place(self, place: Place) -> str:
         logging.info("add: " + str(place))
@@ -178,6 +183,20 @@ class Database:
         for post in posts:
             res.append(convert_doc_to_post(post))
         return res
+
+    def get_all_cities(self) -> [City]:
+        cities = self.cities.find({})
+        res = []
+        for city in cities:
+            res.append(convert_doc_to_city(city))
+        return res
+
+    def find_city_by_id(self, _id: str) -> Optional[City]:
+        val = self.cities.find_one({"_id": ObjectId(_id)})
+        if val is None:
+            return None
+        else:
+            return convert_doc_to_city(dict(val))
 
 
 class YandexS3:

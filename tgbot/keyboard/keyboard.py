@@ -2,7 +2,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from typing import List
 
 from tgbot.config import main_admins
-from tgbot.types.types import Place
+from tgbot.types.types import Place, City, PlaceType
 
 
 def show_admins_chose_buttons():
@@ -102,4 +102,35 @@ def chose_post_find_option(posts):
             line = []
     markup.add(InlineKeyboardButton('Вернуться в меню', callback_data="admin_user"),
                row_width=1)
+    return markup
+
+
+def show_add_photo():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Да', callback_data="add_new_photo"),
+               InlineKeyboardButton('Нет', callback_data="finish_photo"),
+               row_width=1)
+    return markup
+
+
+def show_all_cities(cities: [City]):
+    markup = InlineKeyboardMarkup()
+    line = []
+    for city in cities:
+        line.append(InlineKeyboardButton(city['name'], callback_data="city_id" + str(city["_id"])))
+        if len(line) == 2:
+            markup.add(*line, row_width=2)
+            line = []
+    return markup
+
+
+def show_all_places_type():
+    places_type = [p_t.value for p_t in PlaceType]
+    markup = InlineKeyboardMarkup()
+    line = []
+    for place_type in places_type:
+        line.append(InlineKeyboardButton(place_type, callback_data="place_type" + place_type))
+        if len(line) == 2:
+            markup.add(*line, row_width=2)
+            line = []
     return markup

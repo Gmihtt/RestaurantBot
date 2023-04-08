@@ -1,5 +1,5 @@
 from datetime import datetime
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import TypedDict, Tuple, Optional, Union, List, Dict, Any
 
 
@@ -43,12 +43,11 @@ def convert_user_to_doc(u: User) -> Dict[str, Any]:
     return d
 
 
-class PlaceType(IntEnum):
-    RESTAURANT = 0
+class PlaceType(Enum):
+    RESTAURANT = "RESTAURANT"
 
 
 class Restaurant(TypedDict):
-    menu: str  # file
     mid_price: Optional[int]
     business_lunch: bool
     business_lunch_price: Optional[int]
@@ -67,7 +66,7 @@ class Place(TypedDict):
     place: Union[Restaurant]
     address: str
     coordinates: Tuple[float, float]
-    photos: Optional[List[str]]
+    files: Optional[List[str]]
     telephone: str
     url: Optional[str]
     work_interval: str
@@ -80,9 +79,8 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         _id=d['_id'],
         name=d['name'],
         city=d['city'],
-        place_type=PlaceType(d['place_type']),
+        place_type=PlaceType(d['place_type'].upper()),
         place=Restaurant(
-            menu=d['place']['menu'],
             mid_price=d['place']['menu'],
             business_lunch=d['place']['business_lunch'],
             business_lunch_price=d['place']['business_lunch_price'],
@@ -90,7 +88,7 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         ),
         address=d['address'],
         coordinates=d['coordinates'],
-        photos=d['photos'],
+        files=d['files'],
         telephone=d['telephone'],
         url=d['url'],
         work_interval=d['work_interval'],
@@ -102,12 +100,12 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
 def convert_place_to_doc(p: Place) -> Dict[str, Any]:
     d = dict(p)
     d.pop('_id')
-    if d.get('place_type') is not None:
-        d['place_type'] = int(d.get('place_type'))
+    d['place_type'] = p.get('place_type').value
     return d
 
 
-def pretty_show_place(place: Place) -> str:
+def pretty_show_place(place: Place, is_admin: bool) -> str:
+    id = "" if not is_admin else "id: " + place['_id'] + '\n'
     name = "Название: " + place['name'] + '\n'
     city = "Город: " + place['city'] + '\n'
     place_str = ""
@@ -118,7 +116,7 @@ def pretty_show_place(place: Place) -> str:
     url = "" if place['url'] is None else place['url'] + '\n'
     work_interval = "Время работы" + place['work_interval'] + '\n'
     description = "" if place['description'] is None else place['description'] + '\n'
-    return (
+    return (id +
             name +
             city +
             place_str +
@@ -127,7 +125,7 @@ def pretty_show_place(place: Place) -> str:
             url +
             work_interval +
             description
-    )
+            )
 
 
 class Post(TypedDict):
@@ -137,6 +135,7 @@ class Post(TypedDict):
     count_users: int
     user_id: int
     date: datetime
+    photos: List[str]
 
 
 def convert_doc_to_post(d: Dict[str, Any]) -> Post:
@@ -146,7 +145,8 @@ def convert_doc_to_post(d: Dict[str, Any]) -> Post:
         body=d["body"],
         count_users=d["count_users"],
         user_id=d["user_id"],
-        date=d["date"]
+        date=d["date"],
+        photos=d.get("photos")
     )
 
 
@@ -162,3 +162,23 @@ def pretty_show_post(post: Post) -> str:
     count_users = "количество пользователей до которых пост дошел: " + str(post["count_users"]) + '\n'
     date = "создан: " + str(post["date"])
     return id + name + count_users + date
+
+
+class City(TypedDict):
+    _id: Optional[str]
+    name: str
+    city_id: str
+
+
+def convert_doc_to_city(d: Dict[str, Any]) -> City:
+    return City(
+        _id=d["_id"],
+        name=d["name"],
+        city_id=d["city_id"]
+    )
+
+
+class FileTypes(IntEnum):
+    Photo = 1
+    Video = 2
+    Document = 3

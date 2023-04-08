@@ -28,8 +28,13 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
 
 
 async def send_welcome(message: Message, bot: AsyncTeleBot):
-    print("HELLLo")
     await bot.reply_to(message, """
+        \nПришли мне свое местоположение и я покажу какие места есть рядом с тобой
+        """, reply_markup=keyboard.show_location_button())
+
+
+async def send_welcome_callback(call: CallbackQuery, bot: AsyncTeleBot):
+    await bot.send_message(chat_id=call.message.chat.id, text="""
     \nПришли мне свое местоположение и я покажу какие места есть рядом с тобой
     """, reply_markup=keyboard.show_location_button())
 
@@ -98,7 +103,9 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
     place = db.find_place(place_id)
     if place is None:
         raise Exception("db return None place")
-    await bot.send_message(chat_id=call.message.chat.id, text=pretty_show_place(place),
+    user_id = call.from_user.id
+    is_admin = user_id in main_admins or db.is_admin(user_id)
+    await bot.send_message(chat_id=call.message.chat.id, text=pretty_show_place(place, is_admin),
                            reply_markup=keyboard.show_place())
 
 

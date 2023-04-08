@@ -1,7 +1,1 @@
 root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
-root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
-root - INFO - add post: {'_id': None, 'name': 'Тестирую пост', 'body': 'Что если юзер пидор меня заблокировал', 'count_users': 3, 'user_id': 381873540, 'date': datetime.datetime(2023, 3, 24, 16, 51, 34, 393517)}
-root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
-root - INFO - add post: {'_id': None, 'name': 'еще тестирую', 'body': 'тестов мало не бывает', 'count_users': 2, 'user_id': 381873540, 'date': datetime.datetime(2023, 3, 24, 16, 52, 28, 574766)}
-root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
-root - INFO - add user: {'_id': None, 'user_tg_id': 5351026336, 'chat_id': 5351026336, 'username': 'GmihttBiocad'}

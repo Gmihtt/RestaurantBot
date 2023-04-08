@@ -81,14 +81,20 @@ def check_all_places(call: CallbackQuery):
 
 def check_post_name(message: Message):
     user_id = str(message.from_user.id)
-    name = storage.get('admin_post' + user_id)
-    return name is not None and name == "name"
+    name = storage.get('admin_post_name' + user_id)
+    return name is not None and name == "wait"
 
 
 def check_post_body(message: Message):
     user_id = str(message.from_user.id)
-    name = storage.get('admin_post' + user_id)
-    return name is not None
+    body = storage.get('admin_post_body' + user_id)
+    return body is not None and body == "wait"
+
+
+def check_post_photos(message: Message):
+    user_id = str(message.from_user.id)
+    count = storage.get('admin_photo_count' + user_id)
+    return count is not None
 
 
 def check_push_post(call: CallbackQuery):
@@ -97,3 +103,11 @@ def check_push_post(call: CallbackQuery):
 
 def post_id(call: CallbackQuery):
     return call.data.find("post_id") != -1
+
+
+def add_new_photo(call: CallbackQuery):
+    return call.data == "add_new_photo"
+
+
+def finish_photo(call: CallbackQuery):
+    return call.data == "finish_photo"
