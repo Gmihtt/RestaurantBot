@@ -5,7 +5,7 @@ from telebot.asyncio_filters import StateFilter
 # telebot
 from telebot.async_telebot import AsyncTeleBot
 
-from tgbot.handlers.handlers import first_handlers, admin_handlers, user_handlers, other_handlers
+from tgbot.handlers.handlers import welcome_handlers, admin_handlers, user_handlers, other_handlers
 # config
 from tgbot import config
 import logging
@@ -16,7 +16,7 @@ bot = AsyncTeleBot(config.TOKEN)
 
 
 def register_handlers():
-    first_handlers(bot)
+    welcome_handlers(bot)
     admin_handlers(bot)
     user_handlers(bot)
     other_handlers(bot)

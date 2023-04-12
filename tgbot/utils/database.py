@@ -3,7 +3,6 @@ from typing import List, Tuple, Optional, TypedDict, Dict, Any
 
 import boto3
 import pymongo
-from botocore.exceptions import ClientError
 from bson import ObjectId
 from pymongo import MongoClient, GEO2D
 
@@ -29,6 +28,12 @@ class Storage:
 
     def get(self, key: str) -> Optional[str]:
         return self.r.get(key)
+
+    def pop(self, key: str) -> Optional[str]:
+        res = self.get(key)
+        if res is not None:
+            self.delete(key)
+        return res
 
     def delete(self, key: str):
         self.r.delete(key)
@@ -72,6 +77,9 @@ class Database:
             return None
         else:
             return convert_doc_to_place(dict(val))
+
+    def delete_place(self, place_id: str):
+        return self.places.delete_one({"_id": ObjectId(place_id)})
 
     def get_places_count(self) -> int:
         return self.places.count_documents({})

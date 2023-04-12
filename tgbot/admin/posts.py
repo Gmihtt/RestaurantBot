@@ -33,7 +33,7 @@ async def add_post_body(message: Message, bot: AsyncTeleBot):
     storage.add('admin_photo_count' + user_id, "0")
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить фото?""",
-                           reply_markup=keyboard.show_add_photo())
+                           reply_markup=keyboard.show_add_photo(suffix="post"))
 
 
 async def post_photo_message(call: CallbackQuery, bot: AsyncTeleBot):
@@ -58,7 +58,7 @@ async def add_post_photo(message: Message, bot: AsyncTeleBot):
         storage.add('admin_post_photos' + user_id, file_ids + ',' + message.photo[0].file_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото?""",
-                           reply_markup=keyboard.show_add_photo())
+                           reply_markup=keyboard.show_add_photo(suffix="post"))
 
 
 async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
@@ -69,8 +69,7 @@ async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
     if val is None:
         file_ids = []
     else:
-        file_ids = storage.get('admin_post_photos' + user_id).split(',')
-
+        file_ids = val.split(',')
     await bot.send_message(chat_id=chat_id, text="Вот что увидит пользователь:")
     body = storage.get('admin_post_body' + user_id)
     if len(file_ids) == 0:
@@ -93,13 +92,9 @@ async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def send_post(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
-    name = storage.get('admin_post_name' + user_id)
-    storage.delete('admin_post_name' + user_id)
-    msg = storage.get('admin_post_body' + user_id)
-    storage.delete('admin_post_body' + user_id)
-    file_ids = storage.get('admin_post_photos' + user_id).split(',')
-    storage.delete('admin_post_photos' + user_id)
-    storage.delete('admin_photo_count' + user_id)
+    name = storage.pop('admin_post_name' + user_id)
+    msg = storage.pop('admin_post_body' + user_id)
+    file_ids = storage.pop('admin_post_photos' + user_id).split(',')
 
     all_users = db.get_all_users()
     count = 0

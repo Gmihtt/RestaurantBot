@@ -3,6 +3,11 @@ from enum import Enum, IntEnum
 from typing import TypedDict, Tuple, Optional, Union, List, Dict, Any
 
 
+class FileTypes(IntEnum):
+    Photo = 1
+    Video = 2
+
+
 class Admin(TypedDict):
     _id: Optional[str]
     user_id: str
@@ -54,19 +59,15 @@ class Restaurant(TypedDict):
     kitchen: Optional[str]
 
 
-def pretty_show_restaurant(rest: Restaurant) -> str:
-    return "скоро появится реализация"
-
-
 class Place(TypedDict):
     _id: Optional[str]
     name: str
-    city: str
+    city: str  # city_id
     place_type: PlaceType
     place: Union[Restaurant]
     address: str
     coordinates: Tuple[float, float]
-    files: Optional[List[str]]
+    files: List[Tuple[str, FileTypes]]
     telephone: str
     url: Optional[str]
     work_interval: str
@@ -81,7 +82,7 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         city=d['city'],
         place_type=PlaceType(d['place_type'].upper()),
         place=Restaurant(
-            mid_price=d['place']['menu'],
+            mid_price=d['place']['mid_price'],
             business_lunch=d['place']['business_lunch'],
             business_lunch_price=d['place']['business_lunch_price'],
             kitchen=d['place']['kitchen']
@@ -101,31 +102,8 @@ def convert_place_to_doc(p: Place) -> Dict[str, Any]:
     d = dict(p)
     d.pop('_id')
     d['place_type'] = p.get('place_type').value
+    d['files'] = list(map(lambda f: (f[0], f[1].value), p.get('files')))
     return d
-
-
-def pretty_show_place(place: Place, is_admin: bool) -> str:
-    id = "" if not is_admin else "id: " + place['_id'] + '\n'
-    name = "Название: " + place['name'] + '\n'
-    city = "Город: " + place['city'] + '\n'
-    place_str = ""
-    if place['place_type'] == Restaurant:
-        place_str = pretty_show_restaurant(place['place']) + '\n'
-    address = "Адресс" + place['address'] + '\n'
-    telephone = "Телефон" + place['telephone'] + '\n'
-    url = "" if place['url'] is None else place['url'] + '\n'
-    work_interval = "Время работы" + place['work_interval'] + '\n'
-    description = "" if place['description'] is None else place['description'] + '\n'
-    return (id +
-            name +
-            city +
-            place_str +
-            address +
-            telephone +
-            url +
-            work_interval +
-            description
-            )
 
 
 class Post(TypedDict):
@@ -176,9 +154,3 @@ def convert_doc_to_city(d: Dict[str, Any]) -> City:
         name=d["name"],
         city_id=d["city_id"]
     )
-
-
-class FileTypes(IntEnum):
-    Photo = 1
-    Video = 2
-    Document = 3

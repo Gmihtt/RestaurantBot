@@ -1,1 +1,13 @@
 root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
+TeleBot - ERROR - A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message can't be deleted for everyone
+TeleBot - ERROR - A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message can't be deleted for everyone
+root - INFO - add user: {'_id': None, 'user_tg_id': 1069878084, 'chat_id': 1069878084, 'username': 'danl23'}
+root - INFO - 37.424507,55.71826
+root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
+root - INFO - add admin: {'_id': ObjectId('64371a115c8f2691fa126310'), 'user_tg_id': 1069878084, 'chat_id': 1069878084, 'username': 'danl23'}
+root - INFO - add user: {'_id': None, 'user_tg_id': 1069878084, 'chat_id': 1069878084, 'username': 'danl23'}
+root - INFO - 37.424534,55.718279
+root - INFO - add user: {'_id': None, 'user_tg_id': 1069878084, 'chat_id': 1069878084, 'username': 'danl23'}
+root - INFO - add user: {'_id': None, 'user_tg_id': 381873540, 'chat_id': 381873540, 'username': 'Crocodile_T'}
+root - INFO - add admin: {'_id': ObjectId('641cbd38e1b6ee275d0924a0'), 'user_tg_id': 5351026336, 'chat_id': 5351026336, 'username': 'GmihttBiocad'}
+root - INFO - add user: {'_id': None, 'user_tg_id': 5351026336, 'chat_id': 5351026336, 'username': 'GmihttBiocad'}

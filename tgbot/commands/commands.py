@@ -1,12 +1,14 @@
+import logging
 from typing import Optional
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message, CallbackQuery
 
 from tgbot.config import support, main_admins
-from tgbot.types.types import pretty_show_place, User
+from tgbot.types.types import User
 from tgbot.utils.database import db, storage
 import tgbot.keyboard.keyboard as keyboard
+from tgbot.utils.functions import pretty_show_place, send_files
 
 
 async def check_welcome(message: Message, bot: AsyncTeleBot):
@@ -30,6 +32,7 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
 async def send_welcome(message: Message, bot: AsyncTeleBot):
     await bot.reply_to(message, """
         \nПришли мне свое местоположение и я покажу какие места есть рядом с тобой
+        \nЛучше всего делать это с телефона
         """, reply_markup=keyboard.show_location_button())
 
 
@@ -44,8 +47,10 @@ async def show_places_base(message, bot: AsyncTeleBot):
     skip = 0
     storage.add('show' + user_id, str(skip))
     loc = "{0},{1}".format(message.location.longitude, message.location.latitude)
+    logging.info(str(loc))
     storage.add('place' + user_id, loc)
     places = db.find_close_place((message.location.longitude, message.location.latitude), skip=skip)
+    print(places)
     if len(places) == 0:
         raise Exception("db return empty places list")
     await bot.reply_to(message, """
@@ -82,17 +87,25 @@ async def show_places_next_or_back(call: CallbackQuery, bot: AsyncTeleBot, pred:
         raise Exception("storage return: " + loc)
     if pred is not None:
         skip = skip + 10 if pred else skip - 10
-    storage.add('show' + user_id, str(skip))
     lon, lat = float(new_loc[0]), float(new_loc[1])
     print("{0}, {1}".format(lon, lat))
     places = db.find_close_place((lon, lat), skip=skip)
-    if len(places) == 0:
-        raise Exception("db return empty places list")
-    start = skip == 0
-    await bot.send_message(chat_id=call.message.chat.id, text="""
-    Вот места рядом с вами, нажмите на любое из них для подробной информации\n
-    Либо пришлите новую точку
-    """, reply_markup=keyboard.show_places(places, start=start))
+    if len(places) == 0 and pred is not None:
+        if pred:
+            skip -= 10
+            places = db.find_close_place((lon, lat), skip=skip)
+        else:
+            skip += 10
+            places = db.find_close_place((lon, lat), skip=skip)
+        await bot.send_message(chat_id=call.message.chat.id, text="""
+            Вы докрутили до конца списка:(
+            """, reply_markup=keyboard.show_places(places, start=skip == 0))
+    else:
+        await bot.send_message(chat_id=call.message.chat.id, text="""
+        Вот места рядом с вами, нажмите на любое из них для подробной информации\n
+        Либо пришлите новую точку
+        """, reply_markup=keyboard.show_places(places, start=skip == 0))
+    storage.add('show' + user_id, str(skip))
 
 
 async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
@@ -105,8 +118,14 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
         raise Exception("db return None place")
     user_id = call.from_user.id
     is_admin = user_id in main_admins or db.is_admin(user_id)
-    await bot.send_message(chat_id=call.message.chat.id, text=pretty_show_place(place, is_admin),
-                           reply_markup=keyboard.show_place())
+    await send_files(text=pretty_show_place(place, is_admin=is_admin),
+                     chat_id=call.message.chat.id,
+                     files=place['files'],
+                     bot=bot)
+    val = storage.pop('search_by_coords' + str(user_id))
+    is_admin = is_admin and (val is not None and val == "wait")
+    await bot.send_message(chat_id=call.message.chat.id, text="Выберите",
+                           reply_markup=keyboard.show_place(is_admin=is_admin, place_id=place_id))
 
 
 async def send_help(message: Message, bot: AsyncTeleBot):

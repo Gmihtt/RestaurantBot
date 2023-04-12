@@ -23,11 +23,15 @@ def show_location_button():
 def show_places(places: List[Place], start: bool) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     line = []
-    for place in places:
-        line.append(InlineKeyboardButton(place['name'], callback_data="place_id" + str(place['_id'])))
-        if len(line) == 2:
-            markup.add(*line, row_width=2)
-            line = []
+    if len(places) == 1:
+        place = places[0]
+        markup.add(InlineKeyboardButton(place['name'], callback_data="place_id" + str(place['_id'])))
+    else:
+        for place in places:
+            line.append(InlineKeyboardButton(place['name'], callback_data="place_id" + str(place['_id'])))
+            if len(line) == 2:
+                markup.add(*line, row_width=2)
+                line = []
     if not start:
         markup.add(InlineKeyboardButton('<', callback_data="places_back"),
                    InlineKeyboardButton('>', callback_data="places_next"),
@@ -37,9 +41,11 @@ def show_places(places: List[Place], start: bool) -> InlineKeyboardMarkup:
     return markup
 
 
-def show_place() -> InlineKeyboardMarkup:
+def show_place(is_admin: bool, place_id: str) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.row_width = 1
+    if is_admin:
+        markup.add(InlineKeyboardButton("Удалить место", callback_data="delete_place" + place_id))
     markup.add(InlineKeyboardButton("🔙", callback_data="places_cur"))
     return markup
 
@@ -50,16 +56,14 @@ def show_admin_menu(user_id: int):
                InlineKeyboardButton('Найти пост', callback_data="find_post"),
                row_width=1)
     markup.add(InlineKeyboardButton('Добавить место', callback_data="add_place"),
-               InlineKeyboardButton('Редактировать место', callback_data="edit_place"),
-               InlineKeyboardButton('Удалить место', callback_data="edit_place"),
+               InlineKeyboardButton('Найти место', callback_data="find_place"),
                row_width=1)
     if user_id in main_admins:
         markup.add(InlineKeyboardButton('Добавить админа', callback_data="add_admin"),
                    InlineKeyboardButton('Удалить админа', callback_data="delete_admin"),
                    row_width=1)
-    markup.add(InlineKeyboardButton('Найти место по названию', callback_data="find_place"),
-               InlineKeyboardButton('Статистика', callback_data="statistics"),
-               row_width=1)
+        markup.add(InlineKeyboardButton('Статистика', callback_data="statistics"),
+                   row_width=1)
     markup.add(InlineKeyboardButton('Вернуться в меню пользователя', callback_data="return_start"),
                row_width=1)
     return markup
@@ -105,10 +109,10 @@ def chose_post_find_option(posts):
     return markup
 
 
-def show_add_photo():
+def show_add_photo(suffix: str):
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('Да', callback_data="add_new_photo"),
-               InlineKeyboardButton('Нет', callback_data="finish_photo"),
+    markup.add(InlineKeyboardButton('Да', callback_data="add_new_photo_" + suffix),
+               InlineKeyboardButton('Нет', callback_data="finish_photo_" + suffix),
                row_width=1)
     return markup
 
@@ -118,9 +122,8 @@ def show_all_cities(cities: [City]):
     line = []
     for city in cities:
         line.append(InlineKeyboardButton(city['name'], callback_data="city_id" + str(city["_id"])))
-        if len(line) == 2:
-            markup.add(*line, row_width=2)
-            line = []
+        markup.add(*line, row_width=1)
+        line = []
     return markup
 
 
@@ -130,7 +133,32 @@ def show_all_places_type():
     line = []
     for place_type in places_type:
         line.append(InlineKeyboardButton(place_type, callback_data="place_type" + place_type))
-        if len(line) == 2:
-            markup.add(*line, row_width=2)
-            line = []
+        markup.add(*line, row_width=1)
+        line = []
+    return markup
+
+
+def approve_place():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Добавить место', callback_data="push_place"),
+               InlineKeyboardButton('Начать с начала', callback_data="add_place"),
+               row_width=2)
+    markup.add(InlineKeyboardButton('Вернуться в меню', callback_data="admin_user"),
+               row_width=1)
+    return markup
+
+
+def chose_place_search():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Поиск по точке', callback_data="search_by_coords"),
+               row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться в меню', callback_data="admin_user"),
+               row_width=1)
+    return markup
+
+
+def button_admin_menu():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Вернуться в меню', callback_data="admin_user"),
+               row_width=1)
     return markup
