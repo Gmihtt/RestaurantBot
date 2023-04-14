@@ -3,7 +3,7 @@ from typing import List, Tuple
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InputMediaPhoto, InputMediaVideo
 
-from tgbot.types.types import Place, Restaurant, PlaceType, FileTypes
+from tgbot.types.types import Place, Restaurant, PlaceType, FileTypes, File
 from tgbot.databases.database import db
 
 
@@ -72,13 +72,13 @@ def generate_places(count: int):
 
 async def send_files(text: str,
                      chat_id: int,
-                     files: List[Tuple[str, FileTypes]],
+                     files: List[File],
                      bot: AsyncTeleBot):
     if len(files) == 0:
         await bot.send_message(chat_id=chat_id, text=text)
     if len(files) == 1:
-        file_type = files[0][1]
-        file_id = files[0][0]
+        file_type = files[0]['file']
+        file_id = files[0]['file_id']
         if file_type == FileTypes.Photo:
             await bot.send_photo(chat_id=chat_id,
                                  caption=text,
@@ -90,8 +90,8 @@ async def send_files(text: str,
     else:
         list_of_medias = []
         for i, file in enumerate(files):
-            file_type = file[1]
-            file_id = file[0]
+            file_type = files[0]['file']
+            file_id = files[0]['file_id']
             if file_type == FileTypes.Photo:
                 list_of_medias.append(
                     InputMediaPhoto(media=file_id, caption=text if i == 0 else None)

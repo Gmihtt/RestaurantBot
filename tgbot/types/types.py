@@ -1,11 +1,18 @@
 from datetime import datetime
-from enum import Enum, IntEnum
+from enum import Enum
+from strenum import StrEnum
 from typing import TypedDict, Tuple, Optional, Union, List, Dict, Any
 
 
-class FileTypes(IntEnum):
-    Photo = 1
-    Video = 2
+class FileTypes(StrEnum):
+    Photo = "photo"
+    Video = "video"
+    Document = "document"
+
+
+class File(TypedDict):
+    file_id: str
+    file: FileTypes
 
 
 class Admin(TypedDict):
@@ -67,7 +74,7 @@ class Place(TypedDict):
     place: Union[Restaurant]
     address: str
     coordinates: Tuple[float, float]
-    files: List[Tuple[str, FileTypes]]
+    files: List[File]
     telephone: str
     url: Optional[str]
     work_interval: str

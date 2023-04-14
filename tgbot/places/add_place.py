@@ -1,19 +1,23 @@
 import logging
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery, Message
 
 from tgbot.config import support
 from tgbot.keyboard import keyboard
-from tgbot.types.types import PlaceType, FileTypes, Place, Restaurant
-from tgbot.databases.database import storage, db
+from tgbot.types.types import PlaceType, FileTypes, Place, Restaurant, File
+from tgbot.databases.database import db
 from tgbot.utils.functions import pretty_show_place, send_files
+from tgbot.places.states import PlaceStates
+from tgbot import states
+from tgbot.values import add_values_to_map, get_count_files, add_file_to_list, get_all_values_from_map, get_files, \
+    delete_files
 
 
 async def place_example(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
-    storage.add('admin_place_info' + user_id, "wait")
+    states.set_state(PlaceStates.AddInfo, user_id)
     await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Для начала заполни по шаблону информацию о месте""")
@@ -29,7 +33,7 @@ async def place_example(call: CallbackQuery, bot: AsyncTeleBot):
 <ссылка на место>
 
 <рабочее время>
-    """
+"""
     await bot.send_message(chat_id=call.message.chat.id,
                            text=place_str)
 
@@ -50,7 +54,8 @@ async def place_info_parse(message: Message, bot: AsyncTeleBot):
     size = len(fields)
     if size != 6:
         await bot.send_message(chat_id=message.chat.id,
-                               text=f"""вы прислали {size} полей, а я ожидаю 6 как в примере, попробуйте заполнить сообщение еще раз""",
+                               text=f"""вы прислали {size} полей, """
+                                    """а я ожидаю 6 как в примере, попробуйте заполнить сообщение еще раз""",
                                )
         return
     if check_coords(fields[2]):
@@ -59,13 +64,16 @@ async def place_info_parse(message: Message, bot: AsyncTeleBot):
                                     """попробуйте заполнить еще раз, либо напишите: """ + support,
                                reply_markup=keyboard.show_admins_chose_buttons())
         return
-    storage.delete('admin_place_info' + user_id)
-    storage.add('admin_place_name' + user_id, fields[0])
-    storage.add('admin_place_address' + user_id, fields[1])
-    storage.add('admin_place_coords' + user_id, fields[2])
-    storage.add('admin_place_phone' + user_id, fields[3])
-    storage.add('admin_place_url' + user_id, fields[4])
-    storage.add('admin_place_work' + user_id, fields[5])
+
+    place_info = {
+        "name": fields[0],
+        "address": fields[1],
+        "coordinates": fields[2],
+        "phone": fields[3],
+        "url": fields[4],
+        "work": fields[5]
+    }
+    add_values_to_map(place_info, user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text=f"""выберите какой это тип заведения""",
                            reply_markup=keyboard.show_all_places_type())
@@ -74,14 +82,17 @@ async def place_info_parse(message: Message, bot: AsyncTeleBot):
 async def place_type_parse(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     user_id = str(call.from_user.id)
-    if call.data == "place_type" + PlaceType.RESTAURANT.value:
-        storage.add('admin_place_type' + user_id, PlaceType.RESTAURANT.value)
+    text = call.data[len("place_type"):]
+    if text == PlaceType.RESTAURANT.value:
+        states.set_state(PlaceStates.AddRestaurantInfo, user_id)
+        place_type = {
+            "place_type": PlaceType.RESTAURANT.value
+        }
+        add_values_to_map(place_type, user_id)
         await place_send_restaurant_message(call, bot)
 
 
 async def place_send_restaurant_message(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    storage.add('admin_restaurant_info' + user_id, "wait")
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Заполни по шаблону информацию о ресторане""")
     place_str = """
@@ -104,20 +115,25 @@ async def place_restaurant_parse(message: Message, bot: AsyncTeleBot):
     size = len(fields)
     if size != 4:
         await bot.send_message(chat_id=message.chat.id,
-                               text=f"вы прислали {size} полей, а я ожидаю 6 как в примере, попробуйте заполнить сообщение еще раз")
+                               text=f"""вы прислали {size} полей, """
+                                    """а я ожидаю 4 как в примере, попробуйте заполнить сообщение еще раз""")
         return
-    storage.delete('admin_restaurant_info' + user_id)
-    storage.add('admin_restaurant_mid_price' + user_id, fields[0])
-    storage.add('admin_restaurant_business_lunch' + user_id, fields[1])
-    storage.add('admin_restaurant_business_lunch_price' + user_id, fields[2])
-    storage.add('admin_restaurant_kitchen' + user_id, fields[3])
-    storage.add('admin_place_files_count' + user_id, "0")
+
+    restaurant_info = {
+        "mid_price": fields[0],
+        "business_lunch": fields[1],
+        "business_lunch_price": fields[2],
+        "kitchen": fields[3],
+    }
+    add_values_to_map(restaurant_info, user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото, видео или файл?""",
                            reply_markup=keyboard.show_add_photo(suffix="place"))
 
 
 async def place_file_message(call: CallbackQuery, bot: AsyncTeleBot):
+    user_id = str(call.from_user.id)
+    states.set_state(PlaceStates.AddFiles, user_id)
     await bot.delete_message(call.message.chat.id, call.message.id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Отправь мне до 10 медиа, которые хотите добавить к посту\n"""
@@ -126,127 +142,109 @@ async def place_file_message(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def place_parse_file(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
-    logging.info(message.content_type)
     type_of_file = message.content_type
     if message.content_type == "photo":
-        file = message.photo[0]
+        file_tg = message.photo[0]
+    elif message.content_type == "video":
+        file_tg = message.video
     else:
-        file = message.video
-    count = int(storage.get('admin_place_files_count' + user_id))
+        file_tg = message.document
+
+    count = get_count_files(user_id)
     if count >= 10:
         await bot.send_message(chat_id=message.chat.id,
                                text="""Вы прислали больше 10 вложений""")
         return
-    storage.add('admin_place_files_count' + user_id, str(count + 1))
-    if count == 0:
-        storage.add('admin_place_files' + user_id, file.file_id + ';' + type_of_file)
-    else:
-        file_ids = storage.get('admin_place_files' + user_id)
-        storage.add('admin_place_files' + user_id, file_ids + ',' + file.file_id + ';' + type_of_file)
+    file = File(
+        file_id=file_tg.file_id,
+        file=FileTypes[type_of_file]
+    )
+    add_file_to_list(file=file, user_id=user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото или видео?""",
                            reply_markup=keyboard.show_add_photo(suffix="place"))
 
 
 async def place_description_msg(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     user_id = str(call.from_user.id)
-    storage.add('admin_place_description' + user_id, "wait")
+    states.set_state(PlaceStates.AddDescription, user_id)
+    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Пришлите мне описание места, одним текстовым сообщением""")
 
 
 async def place_city_chose(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
-    storage.add('admin_place_description' + user_id, message.text)
-    storage.add('admin_place_city' + user_id, "wait")
+    states.set_state(PlaceStates.AddCity, user_id)
+    place_description = {
+        "description": message.text
+    }
+    add_values_to_map(place_description, user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Выберите город для которого заполняете это место""",
                            reply_markup=keyboard.show_all_cities(db.get_all_cities()))
 
 
-def get_place_from_storage(data: str, user_id: str, getter) -> Optional[Place]:
-    def make_files():
-        vals = getter('admin_place_files' + user_id).split(',')
-        ids_types = []
-        for val in vals:
-            file_id, file_type = tuple(val.split(';'))
-            if file_type == 'photo':
-                ids_types.append((file_id, FileTypes.Photo))
-            elif file_type == 'video':
-                ids_types.append((file_id, FileTypes.Video))
-        return ids_types
-
-    name = getter('admin_place_name' + user_id)
+def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Optional[Place]:
+    place_map = get_all_values_from_map(user_id)
     city = data[len("city_id"):]
-    address = getter('admin_place_address' + user_id)
-    coordinates: Tuple[float, float] = tuple(map(float, getter('admin_place_coords' + user_id).split(',')))
-    phone = getter('admin_place_phone' + user_id)
-    url = getter('admin_place_url' + user_id)
-    work_int = getter('admin_place_work' + user_id)
-    place_type = PlaceType[getter('admin_place_type' + user_id)]
-    description = getter('admin_place_description' + user_id)
-    print("hello")
-    file_ids_types = make_files()
-    print("hello1")
-    place = None
+    l_coords = list(map(float, place_map['coordinates'].split(',')))
+    coordinates = (l_coords[0], l_coords[1])
+    place_type = PlaceType[place_map['place_type']]
+
     if place_type == PlaceType.RESTAURANT:
-        mid_price = getter('admin_restaurant_mid_price' + user_id)
-        if mid_price == "нет":
-            mid_price = None
-        business_lunch = getter('admin_restaurant_business_lunch' + user_id)
-        business_lunch = business_lunch == "да"
-        business_lunch_price = getter('admin_restaurant_business_lunch_price' + user_id)
-        if business_lunch_price == "нет":
-            mid_price = None
-        kitchen = getter('admin_restaurant_kitchen' + user_id)
-        if kitchen == "нет":
-            mid_price = None
+        restaurant = Restaurant(
+            mid_price=None if place_map['mid_price'] == "нет" else place_map['mid_price'],
+            business_lunch=place_map['business_lunch'] == "да",
+            business_lunch_price=
+            None if place_map['business_lunch_price'] == "нет" else place_map['business_lunch_price'],
+            kitchen=None if place_map['kitchen'] == "нет" else place_map['kitchen'],
+        )
+
         place = Place(
             _id=None,
-            name=name,
-            address=address,
+            name=place_map['name'],
+            address=place_map['address'],
             city=city,
             coordinates=coordinates,
-            telephone=phone,
-            url=url,
-            work_interval=work_int,
-            description=description,
-            place_type=PlaceType.RESTAURANT,
-            place=Restaurant(
-                mid_price=mid_price,
-                business_lunch=business_lunch,
-                business_lunch_price=business_lunch_price,
-                kitchen=kitchen
-            ),
+            telephone=place_map['phone'],
+            url=place_map['url'],
+            work_interval=place_map['work'],
+            description=place_map['description'],
+            place_type=place_type.value,
+            place=restaurant,
             last_modify_id=int(user_id),
-            files=file_ids_types
+            files=files
         )
-    return place
+        return place
 
 
 async def place_approve(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     user_id = str(call.from_user.id)
-    storage.delete('admin_place_city' + user_id)
+    states.set_state(PlaceStates.Push, user_id)
+    files = get_files(user_id)
     place = get_place_from_storage(data=call.data,
                                    user_id=user_id,
-                                   getter=storage.get)
+                                   files=files)
     chat_id = call.message.chat.id
     await bot.send_message(chat_id=chat_id,
                            text="""пользователи увидят такое место, если вы его добавите""")
     await send_files(text=pretty_show_place(place, is_admin=True),
                      chat_id=chat_id,
-                     files=place['files'],
+                     files=files,
                      bot=bot)
     await bot.send_message(chat_id=chat_id, reply_markup=keyboard.approve_place(), text="Выберите")
 
 
 async def push_place(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    user_id = str(call.from_user.id)
+    files = get_files(user_id)
     place = get_place_from_storage(data=call.data,
                                    user_id=str(call.from_user.id),
-                                   getter=storage.get)
+                                   files=files)
+    delete_files(user_id)
     place_id = db.add_place(place)
     chat_id = call.message.chat.id
     await bot.send_message(chat_id=chat_id,

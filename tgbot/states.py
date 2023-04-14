@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union
 
 from tgbot.databases.redis_storage import storage
 from tgbot.places.states import PlaceStates
@@ -10,7 +10,7 @@ States = Union[PlaceStates]
 def set_state(state: States, user_id: str):
     key = 'state' + user_id
     if type(state) == PlaceStates:
-        val = 'place' + state.value
+        val = 'place' + state
         storage.add_val(key, val)
 
 
