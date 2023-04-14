@@ -5,8 +5,7 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery, Message
 
 from tgbot.config import support
-from tgbot.keyboard.keyboard import show_all_cities, show_all_places_type, show_add_photo, approve_place, \
-    show_admins_chose_buttons, chose_place_search, button_admin_menu
+from tgbot.keyboard import keyboard
 from tgbot.types.types import PlaceType, FileTypes, Place, Restaurant
 from tgbot.databases.database import storage, db
 from tgbot.utils.functions import pretty_show_place, send_files
@@ -58,7 +57,7 @@ async def place_info_parse(message: Message, bot: AsyncTeleBot):
         await bot.send_message(chat_id=message.chat.id,
                                text="""место с такими координатами уже существует\n"""
                                     """попробуйте заполнить еще раз, либо напишите: """ + support,
-                               reply_markup=show_admins_chose_buttons())
+                               reply_markup=keyboard.show_admins_chose_buttons())
         return
     storage.delete('admin_place_info' + user_id)
     storage.add('admin_place_name' + user_id, fields[0])
@@ -69,7 +68,7 @@ async def place_info_parse(message: Message, bot: AsyncTeleBot):
     storage.add('admin_place_work' + user_id, fields[5])
     await bot.send_message(chat_id=message.chat.id,
                            text=f"""выберите какой это тип заведения""",
-                           reply_markup=show_all_places_type())
+                           reply_markup=keyboard.show_all_places_type())
 
 
 async def place_type_parse(call: CallbackQuery, bot: AsyncTeleBot):
@@ -115,7 +114,7 @@ async def place_restaurant_parse(message: Message, bot: AsyncTeleBot):
     storage.add('admin_place_files_count' + user_id, "0")
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото, видео или файл?""",
-                           reply_markup=show_add_photo(suffix="place"))
+                           reply_markup=keyboard.show_add_photo(suffix="place"))
 
 
 async def place_file_message(call: CallbackQuery, bot: AsyncTeleBot):
@@ -146,7 +145,7 @@ async def place_parse_file(message: Message, bot: AsyncTeleBot):
         storage.add('admin_place_files' + user_id, file_ids + ',' + file.file_id + ';' + type_of_file)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото или видео?""",
-                           reply_markup=show_add_photo(suffix="place"))
+                           reply_markup=keyboard.show_add_photo(suffix="place"))
 
 
 async def place_description_msg(call: CallbackQuery, bot: AsyncTeleBot):
@@ -163,7 +162,7 @@ async def place_city_chose(message: Message, bot: AsyncTeleBot):
     storage.add('admin_place_city' + user_id, "wait")
     await bot.send_message(chat_id=message.chat.id,
                            text="""Выберите город для которого заполняете это место""",
-                           reply_markup=show_all_cities(db.get_all_cities()))
+                           reply_markup=keyboard.show_all_cities(db.get_all_cities()))
 
 
 def get_place_from_storage(data: str, user_id: str, getter) -> Optional[Place]:
@@ -240,7 +239,7 @@ async def place_approve(call: CallbackQuery, bot: AsyncTeleBot):
                      chat_id=chat_id,
                      files=place['files'],
                      bot=bot)
-    await bot.send_message(chat_id=chat_id, reply_markup=approve_place(), text="Выберите")
+    await bot.send_message(chat_id=chat_id, reply_markup=keyboard.approve_place(), text="Выберите")
 
 
 async def push_place(call: CallbackQuery, bot: AsyncTeleBot):
@@ -252,25 +251,4 @@ async def push_place(call: CallbackQuery, bot: AsyncTeleBot):
     chat_id = call.message.chat.id
     await bot.send_message(chat_id=chat_id,
                            text=f"Место добавлено и вот его id: {place_id}",
-                           reply_markup=button_admin_menu())
-
-
-async def send_search_message(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.send_message(chat_id=call.message.chat.id,
-                           text="Выбери как искать ресторан",
-                           reply_markup=chose_place_search())
-
-
-async def search_by_coords_message(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    storage.add('search_by_coords' + user_id, "wait")
-    await bot.send_message(chat_id=call.message.chat.id,
-                           text="Отправьте точку ресторана через телеграм")
-
-
-async def delete_place(call: CallbackQuery, bot: AsyncTeleBot):
-    place_id = call.data[len("delete_place"):]
-    db.delete_place(place_id)
-    await bot.send_message(chat_id=call.message.chat.id,
-                           text="Место удалено",
-                           reply_markup=button_admin_menu())
+                           reply_markup=keyboard.button_admin_menu())

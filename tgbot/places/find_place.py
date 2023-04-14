@@ -2,44 +2,12 @@ import logging
 from typing import Optional
 
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import Message, CallbackQuery
+from telebot.types import CallbackQuery
 
-from tgbot.config import support, main_admins
-from tgbot.types.types import User
+from tgbot.config import main_admins
 from tgbot.databases.database import db, storage
 import tgbot.keyboard.keyboard as keyboard
 from tgbot.utils.functions import pretty_show_place, send_files
-
-
-async def check_welcome(message: Message, bot: AsyncTeleBot):
-    user_id = message.from_user.id
-    user = User(
-        _id=None,
-        user_tg_id=user_id,
-        chat_id=message.chat.id,
-        username=message.from_user.username
-    )
-    db.add_user(user)
-    if user_id in main_admins or db.is_admin(user_id):
-        await bot.reply_to(message, """
-        \nВыберете интерфейс
-        """, reply_markup=keyboard.show_admins_chose_buttons())
-    else:
-        await send_welcome(message, bot)
-        print(user)
-
-
-async def send_welcome(message: Message, bot: AsyncTeleBot):
-    await bot.reply_to(message, """
-        \nПришли мне свое местоположение и я покажу какие места есть рядом с тобой
-        \nЛучше всего делать это с телефона
-        """, reply_markup=keyboard.show_location_button())
-
-
-async def send_welcome_callback(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.send_message(chat_id=call.message.chat.id, text="""
-    \nПришли мне свое местоположение и я покажу какие места есть рядом с тобой
-    """, reply_markup=keyboard.show_location_button())
 
 
 async def show_places_base(message, bot: AsyncTeleBot):
@@ -126,9 +94,3 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
     is_admin = is_admin and (val is not None and val == "wait")
     await bot.send_message(chat_id=call.message.chat.id, text="Выберите",
                            reply_markup=keyboard.show_place(is_admin=is_admin, place_id=place_id))
-
-
-async def send_help(message: Message, bot: AsyncTeleBot):
-    await bot.reply_to(message, """
-    Кажется Вы ввели какое-то странное сообщение, либо Вам нужна помощь.\n
-    Если Вам нужна помощь, то напишите: """ + support)

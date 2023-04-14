@@ -1,10 +1,10 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo, InputMediaDocument
+from telebot.types import InputMediaPhoto, InputMediaVideo
 
 from tgbot.types.types import Place, Restaurant, PlaceType, FileTypes
-from tgbot.utils.database import db
+from tgbot.databases.database import db
 
 
 def pretty_show_restaurant(rest: Restaurant) -> str:

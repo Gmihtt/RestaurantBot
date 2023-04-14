@@ -4,7 +4,7 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message, CallbackQuery, InputMediaPhoto
 
 from tgbot.types.types import Post, pretty_show_post
-from tgbot.utils.database import db, storage
+from tgbot.databases.database import db, storage
 import tgbot.keyboard.keyboard as keyboard
 
 

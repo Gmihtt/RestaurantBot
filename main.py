@@ -1,10 +1,10 @@
 import asyncio
 
-from telebot.asyncio_filters import StateFilter
-
 # telebot
 from telebot.async_telebot import AsyncTeleBot
 
+from tgbot.places.states import PlaceStates
+from tgbot.states import set_state, get_state
 from tgbot.handlers.handlers import welcome_handlers, admin_handlers, user_handlers, other_handlers
 # config
 from tgbot import config
@@ -28,7 +28,5 @@ register_handlers()
 async def run():
     await bot.polling(non_stop=True)
 
-
-bot.add_custom_filter(StateFilter(bot))
 
 asyncio.run(run())
