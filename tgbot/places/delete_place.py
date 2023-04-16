@@ -1,14 +1,14 @@
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
-from tgbot.keyboard import keyboard
-from tgbot.databases.database import storage, db
+from tgbot.databases.database import db
+from tgbot.places import keyboards
 
 
 async def send_search_message(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="Выбери как искать ресторан",
-                           reply_markup=keyboard.chose_place_search())
+                           reply_markup=keyboards.chose_place_search())
 
 
 async def search_by_coords_message(call: CallbackQuery, bot: AsyncTeleBot):

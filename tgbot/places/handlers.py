@@ -1,10 +1,14 @@
 from telebot.async_telebot import AsyncTeleBot
 
-from tgbot.filters.filters import check_callback_text, find_callback_text, check_state
-from tgbot.places import add_place
-from tgbot.places import delete_place
-from tgbot.places import find_place
+from tgbot.filters import check_callback_text, find_callback_text, check_state
+from tgbot.places import add_place, delete_place, find_place
 from tgbot.places.states import PlaceStates
+
+
+def place_handlers(bot: AsyncTeleBot):
+    add_place_handlers(bot)
+    delete_place_handlers(bot)
+    find_place_handlers(bot)
 
 
 def add_place_handlers(bot: AsyncTeleBot):
@@ -21,14 +25,14 @@ def add_place_handlers(bot: AsyncTeleBot):
                                  func=lambda c: check_state(c, PlaceStates.AddRestaurantInfo),
                                  pass_bot=True)
     bot.register_callback_query_handler(add_place.place_file_message,
-                                        func=lambda c: check_callback_text(c, "add_new_photo_place"),
+                                        func=lambda c: check_callback_text(c, "add_new_file_place"),
                                         pass_bot=True)
     bot.register_message_handler(add_place.place_parse_file,
                                  content_types=['photo', 'video', 'document'],
                                  func=lambda c: check_state(c, PlaceStates.AddFiles),
                                  pass_bot=True)
     bot.register_callback_query_handler(add_place.place_description_msg,
-                                        func=lambda c: check_callback_text(c, "finish_photo_place"),
+                                        func=lambda c: check_callback_text(c, "finish_file_place"),
                                         pass_bot=True)
     bot.register_message_handler(add_place.place_city_chose,
                                  func=lambda c: check_state(c, PlaceStates.AddDescription),
@@ -54,7 +58,7 @@ def delete_place_handlers(bot: AsyncTeleBot):
 
 
 def find_place_handlers(bot: AsyncTeleBot):
-    bot.register_message_handler(find_place.show_places_base,
+    bot.register_message_handler(find_place.show_places_by_coordinates,
                                  content_types=['location'],
                                  pass_bot=True)
     bot.register_callback_query_handler(find_place.show_cur,

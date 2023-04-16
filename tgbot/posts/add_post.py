@@ -3,9 +3,10 @@ from datetime import datetime
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message, CallbackQuery, InputMediaPhoto
 
-from tgbot.types.types import Post, pretty_show_post
 from tgbot.databases.database import db, storage
-import tgbot.keyboard.keyboard as keyboard
+from tgbot.posts import keyboards
+from tgbot import common_keyboards
+from tgbot.posts.post import Post
 
 
 async def post_name_message(call: CallbackQuery, bot: AsyncTeleBot):
@@ -33,16 +34,16 @@ async def add_post_body(message: Message, bot: AsyncTeleBot):
     storage.add('admin_photo_count' + user_id, "0")
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить фото?""",
-                           reply_markup=keyboard.show_add_photo(suffix="post"))
+                           reply_markup=common_keyboards.show_file(suffix="post"))
 
 
-async def post_photo_message(call: CallbackQuery, bot: AsyncTeleBot):
+async def post_file_message(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(call.message.chat.id, call.message.id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Отправь мне до 10 фото, которые хотите добавить к посту""")
 
 
-async def add_post_photo(message: Message, bot: AsyncTeleBot):
+async def add_post_file(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
     count = int(storage.get('admin_photo_count' + user_id))
     if count >= 10:
@@ -58,7 +59,7 @@ async def add_post_photo(message: Message, bot: AsyncTeleBot):
         storage.add('admin_post_photos' + user_id, file_ids + ',' + message.photo[0].file_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото?""",
-                           reply_markup=keyboard.show_add_photo(suffix="post"))
+                           reply_markup=common_keyboards.show_file(suffix="post"))
 
 
 async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
@@ -73,11 +74,11 @@ async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.send_message(chat_id=chat_id, text="Вот что увидит пользователь:")
     body = storage.get('admin_post_body' + user_id)
     if len(file_ids) == 0:
-        await bot.send_message(chat_id=chat_id, text=body, reply_markup=keyboard.approve_post())
+        await bot.send_message(chat_id=chat_id, text=body, reply_markup=keyboards.approve_post())
     if len(file_ids) == 1:
         await bot.send_photo(chat_id=chat_id,
                              caption=body,
-                             reply_markup=keyboard.approve_post(),
+                             reply_markup=keyboards.approve_post(),
                              photo=file_ids[0])
     else:
         list_of_medias = []
@@ -87,7 +88,7 @@ async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
             )
         await bot.send_media_group(chat_id=chat_id,
                                    media=list_of_medias)
-        await bot.send_message(chat_id=chat_id, reply_markup=keyboard.approve_post(), text="Выберите")
+        await bot.send_message(chat_id=chat_id, reply_markup=keyboards.approve_post(), text="Выберите")
 
 
 async def send_post(call: CallbackQuery, bot: AsyncTeleBot):
@@ -128,23 +129,3 @@ async def send_post(call: CallbackQuery, bot: AsyncTeleBot):
     )
     post_id = db.add_post(post)
     await bot.send_message(chat_id=call.message.chat.id, text=f"""Пост отправлен, его id: {post_id}""")
-
-
-async def find_posts_message(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
-    await bot.send_message(chat_id=call.message.chat.id, text="""
-        Последние 10 постов
-        """, reply_markup=keyboard.chose_post_find_option(db.get_posts()))
-
-
-async def send_post_info(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
-    post_id = call.data[len("post_id"):]
-    print(post_id)
-    post = db.find_post_by_id(post_id)
-    if post is None:
-        await bot.send_message(chat_id=call.message.chat.id, text="""
-                Не вышло найти пост
-                """)
-    else:
-        await bot.send_message(chat_id=call.message.chat.id, text=pretty_show_post(post))

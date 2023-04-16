@@ -1,10 +1,11 @@
 from typing import Union
 
 from tgbot.databases.redis_storage import storage
+from tgbot.introduction.states import IntroStates
 from tgbot.places.states import PlaceStates
 
 
-States = Union[PlaceStates]
+States = Union[PlaceStates, IntroStates]
 
 
 def set_state(state: States, user_id: str):
@@ -12,12 +13,19 @@ def set_state(state: States, user_id: str):
     if type(state) == PlaceStates:
         val = 'place' + state
         storage.add_val(key, val)
+    if type(state) == IntroStates:
+        val = 'intro' + state
+        storage.add_val(key, val)
 
 
 def get_state(user_id: str) -> States:
     key = 'state' + user_id
     val = storage.get_val(key)
+
     if val is None:
         raise Exception(f"user with {user_id} don't have state!!")
+
     if val.find("place") != -1:
         return PlaceStates[val[len("place"):]]
+    if val.find("intro") != -1:
+        return IntroStates[val[len("intro"):]]

@@ -1,0 +1,25 @@
+from telebot.async_telebot import AsyncTeleBot
+from telebot.types import CallbackQuery
+
+from tgbot.databases.database import db
+from tgbot.posts import keyboards
+
+
+async def find_posts_message(call: CallbackQuery, bot: AsyncTeleBot):
+    await bot.delete_message(call.message.chat.id, call.message.id)
+    await bot.send_message(chat_id=call.message.chat.id, text="""
+        Последние 10 постов
+        """, reply_markup=keyboards.chose_post_find_option(db.get_posts()))
+
+
+async def send_post_info(call: CallbackQuery, bot: AsyncTeleBot):
+    await bot.delete_message(call.message.chat.id, call.message.id)
+    post_id = call.data[len("post_id"):]
+    print(post_id)
+    post = db.find_post_by_id(post_id)
+    if post is None:
+        await bot.send_message(chat_id=call.message.chat.id, text="""
+                Не вышло найти пост
+                """)
+    else:
+        await bot.send_message(chat_id=call.message.chat.id, text=pretty_show_post(post))

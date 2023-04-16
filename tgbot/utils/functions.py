@@ -1,73 +1,15 @@
-from typing import List, Tuple
+from typing import List
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InputMediaPhoto, InputMediaVideo
 
-from tgbot.types.types import Place, Restaurant, PlaceType, FileTypes, File
+from tgbot.config import main_admins
+from tgbot.types import FileTypes, File
 from tgbot.databases.database import db
 
 
-def pretty_show_restaurant(rest: Restaurant) -> str:
-    mid_price = ""
-    if rest['mid_price'] is not None:
-        mid_price = 'средний чек: ' + str(rest['mid_price']) + '\n'
-    business_lunch_price = ""
-    if rest['business_lunch']:
-        business_lunch_price = 'цена бизнес ланча: ' + str(rest['business_lunch_price']) + '\n'
-    kitchen = ""
-    if rest['kitchen'] is not None:
-        kitchen = 'кухня: ' + rest['kitchen'] + '\n'
-    return mid_price + business_lunch_price + kitchen
-
-
-def pretty_show_place(place: Place, is_admin: bool) -> str:
-    print(place)
-    id = ""
-    if place['_id'] is not None:
-        id = "" if not is_admin else "id: " + str(place['_id']) + '\n'
-    name = "Название: " + place['name'] + '\n'
-    place_str = ""
-    if place['place_type'] == PlaceType.RESTAURANT:
-        place_str = pretty_show_restaurant(place['place']) + '\n'
-    address = "Адресс" + place['address'] + '\n'
-    telephone = "Телефон" + place['telephone'] + '\n'
-    url = "" if place['url'] is None else place['url'] + '\n'
-    work_interval = "Время работы: " + place['work_interval'] + '\n'
-    description = "" if place['description'] is None else place['description'] + '\n'
-    return (id +
-            name +
-            place_str +
-            address +
-            telephone +
-            url +
-            work_interval +
-            description
-            )
-
-
-def generate_places(count: int):
-    for i in range(count):
-        place = Place(
-            _id=None,
-            name="name" + str(i),
-            city="city" + str(i),
-            place_type=PlaceType.RESTAURANT,
-            place=Restaurant(
-                mid_price=None,
-                business_lunch=False,
-                business_lunch_price=None,
-                kitchen=None
-            ),
-            address="address" + str(i),
-            coordinates=(i, i),
-            telephone=str(i),
-            url=None,
-            work_interval="",
-            description=None,
-            last_modify_id=0,
-            files=[]
-        )
-        db.add_place(place)
+def is_admin(user_id: str) -> bool:
+    return user_id in main_admins or db.is_admin(user_id)
 
 
 async def send_files(text: str,

@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from tgbot.databases.redis_storage import storage
-from tgbot.types.types import File, FileTypes
+from tgbot.types import File, FileTypes
 
 
 def set_value(value: str, user_id: str):

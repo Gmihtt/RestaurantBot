@@ -1,5 +1,5 @@
 from telebot.types import CallbackQuery, Message
-from tgbot import states
+from tgbot.utils import states
 
 
 def check_callback_text(call: CallbackQuery, text: str):

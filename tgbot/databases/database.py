@@ -1,42 +1,16 @@
-import os
-from typing import List, Tuple, Optional, TypedDict, Dict, Any
+from typing import List, Tuple, Optional
 
-import boto3
 import pymongo
 from bson import ObjectId
 from pymongo import MongoClient, GEO2D
 
-from tgbot import config
-from tgbot.types.types import Place, User, convert_place_to_doc, convert_doc_to_place, \
+from tgbot.places.place import Place, convert_place_to_doc, convert_doc_to_place
+from tgbot.types import User, \
     convert_user_to_doc, convert_doc_to_user, Admin, convert_admin_to_doc, convert_doc_to_admin, Post, \
     convert_post_to_doc, convert_doc_to_post, City, convert_doc_to_city
 from tgbot.config import mongo_database, places_collection, users_collection, admins_collection, posts_collection, \
     cities_collection
 import logging
-import redis
-
-
-class Storage:
-    def __init__(self) -> None:
-        self.r = redis.StrictRedis(host="localhost", port=6379, password="", decode_responses=True)
-        keys = self.r.keys('*')
-        if keys:
-            self.r.delete(*keys)
-
-    def add(self, key: str, val: str) -> bool:
-        return self.r.set(key, val)
-
-    def get(self, key: str) -> Optional[str]:
-        return self.r.get(key)
-
-    def pop(self, key: str) -> Optional[str]:
-        res = self.get(key)
-        if res is not None:
-            self.delete(key)
-        return res
-
-    def delete(self, key: str):
-        self.r.delete(key)
 
 
 class Database:
@@ -207,32 +181,5 @@ class Database:
             return convert_doc_to_city(dict(val))
 
 
-class YandexS3:
-    def __init__(self) -> None:
-        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = os.getcwd() + "/.aws/credentials"
-        self.session = boto3.session.Session()
-        self.s3 = self.session.client(
-            service_name='s3',
-            endpoint_url='https://storage.yandexcloud.net'
-        )
-        res = self.s3.list_buckets()
-        is_create = False
-        for bucket in res['Buckets']:
-            if bucket["Name"] == config.bucket:
-                self.bucket = config.bucket
-                is_create = True
-                break
-        if not is_create:
-            self.bucket = self.s3.create_bucket(Bucket=config.bucket)
-
-    def save_object(self, string: str, hash: str):
-        return self.s3.put_object(Bucket=self.bucket, Key=hash, Body=string, StorageClass='STANDARD')
-
-    def get_object(self, hash: str):
-        get_object_response = self.s3.get_object(Bucket=self.bucket, Key=hash).get('Body')
-        return get_object_response.read()
-
-
 db = Database()
 storage = Storage()
-s3 = YandexS3()

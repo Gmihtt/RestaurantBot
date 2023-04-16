@@ -10,6 +10,7 @@ class PlaceStates(StrEnum):
     AddDescription = auto()
     AddCity = auto()
     Push = auto()
-    Show = auto()
+    ShowPlaces = auto()
+    ShowPlace = auto()
     Delete = auto()
     Edit = auto()
