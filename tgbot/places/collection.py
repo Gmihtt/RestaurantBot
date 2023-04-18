@@ -4,7 +4,7 @@ from bson import ObjectId
 from pymongo import GEO2D
 
 from tgbot import config
-from tgbot.databases.database import Database
+from tgbot.databases.mongo_db import Database
 from tgbot.places import place
 from tgbot.places.place import Coordinates
 

@@ -1,11 +1,10 @@
-from typing import List, Tuple, Optional
+from typing import Optional
 
 import pymongo
 from bson import ObjectId
 from pymongo import MongoClient
 
 from tgbot import common_types
-from tgbot.places import place
 from tgbot import config
 import logging
 
@@ -127,13 +126,6 @@ class DatabaseOld:
         for p in posts:
             res.append(post.convert_doc_to_post(p))
         return res
-
-
-class Database:
-    def __init__(self, collection_name: str) -> None:
-        self.client = MongoClient('localhost', 27017)
-        self.db = self.client[config.mongo_database]  # init db
-        self.collection = self.db[collection_name]
 
 
 db = DatabaseOld()
