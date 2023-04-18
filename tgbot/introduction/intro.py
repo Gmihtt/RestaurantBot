@@ -1,16 +1,17 @@
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message, CallbackQuery
 
+from tgbot.common_types import User
 from tgbot.utils import states
 from tgbot.config import support, main_admins
 from tgbot.databases.database import db
 from tgbot.introduction import keyboards
 from tgbot.introduction.states import IntroStates
-from tgbot.types import User
 from tgbot import common_keyboards
 
 
 async def check_welcome(message: Message, bot: AsyncTeleBot):
+    print("hello")
     user_id = message.from_user.id
     states.set_state(IntroStates.Welcome, str(user_id))
     user = User(

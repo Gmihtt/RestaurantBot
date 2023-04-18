@@ -1,12 +1,11 @@
-from enum import auto
 from strenum import StrEnum
 
 
 class PostStates(StrEnum):
-    Name = auto()
-    Body = auto()
-    Files = auto()
-    Approve = auto()
-    Push = auto()
-    Find = auto()
-    Show = auto()
+    Name = "name"
+    Body = "body"
+    Files = "files"
+    Approve = "approve"
+    Push = "push"
+    Find = "find"
+    Show = "show"

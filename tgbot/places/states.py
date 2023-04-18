@@ -1,16 +1,13 @@
-from enum import auto
 from strenum import StrEnum
 
 
 class PlaceStates(StrEnum):
-    AddInfo = auto()
-    AddType = auto()
-    AddRestaurantInfo = auto()
-    AddFiles = auto()
-    AddDescription = auto()
-    AddCity = auto()
-    Push = auto()
-    ShowPlaces = auto()
-    ShowPlace = auto()
-    Delete = auto()
-    Edit = auto()
+    Search = "search"
+    Edit = "edit"
+    AddRestaurantInfo = "add_restaurant_info"
+    AddFiles = "add_files"
+    AddDescription = "add_description"
+    Approve = "approve"
+    Push = "push"
+    ShowPlaces = "show_places"
+    ShowPlace = "show_place"

@@ -1,11 +1,13 @@
 from typing import List
 
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import InputMediaPhoto, InputMediaVideo
+from telebot.types import InputMediaPhoto, InputMediaVideo, Message
 
+from tgbot import common_keyboards
+from tgbot.common_types import File, FileTypes
 from tgbot.config import main_admins
-from tgbot.types import FileTypes, File
 from tgbot.databases.database import db
+from tgbot.utils import values
 
 
 def is_admin(user_id: str) -> bool:
@@ -44,3 +46,28 @@ async def send_files(text: str,
                 )
         await bot.send_media_group(chat_id=chat_id,
                                    media=list_of_medias)
+
+
+async def parse_file(message: Message, bot: AsyncTeleBot, suffix: str):
+    user_id = str(message.from_user.id)
+    type_of_file = message.content_type
+    if message.content_type == "photo":
+        file_tg = message.photo[0]
+    elif message.content_type == "video":
+        file_tg = message.video
+    else:
+        file_tg = message.document
+
+    count = values.get_count_files(user_id)
+    if count >= 10:
+        await bot.send_message(chat_id=message.chat.id,
+                               text="""Вы прислали больше 10 вложений""")
+        return
+    file = File(
+        file_id=file_tg.file_id,
+        file=FileTypes[type_of_file]
+    )
+    values.add_file_to_list(file=file, user_id=user_id)
+    await bot.send_message(chat_id=message.chat.id,
+                           text="""Хотите ли вы добавить еще фото или видео?""",
+                           reply_markup=common_keyboards.show_file(suffix))

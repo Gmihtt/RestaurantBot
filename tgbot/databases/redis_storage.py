@@ -9,6 +9,11 @@ class Storage:
         if keys:
             self.r.delete(*keys)
 
+    def clean_redis(self):
+        keys = self.r.keys('*')
+        if keys:
+            self.r.delete(*keys)
+
     def add_value(self, key: str, val: str) -> bool:
         return self.r.set(key, val)
 
@@ -37,6 +42,10 @@ class Storage:
 
     def get_map(self, name):
         return self.r.hgetall(name=name)
+
+    def clean_map(self, name):
+        keys = self.r.hkeys(name)
+        self.r.hdel(name, *keys)
 
 
 storage = Storage()

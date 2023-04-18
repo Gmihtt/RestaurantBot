@@ -3,10 +3,11 @@ import asyncio
 # telebot
 from telebot.async_telebot import AsyncTeleBot
 
-from tgbot.handlers import welcome_handlers, admin_handlers, user_handlers, other_handlers
+from tgbot.handlers import handlers
 # config
 from tgbot import config
 import logging
+
 
 logging.basicConfig(filename='db.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -14,10 +15,7 @@ bot = AsyncTeleBot(config.TOKEN)
 
 
 def register_handlers():
-    welcome_handlers(bot)
-    admin_handlers(bot)
-    user_handlers(bot)
-    other_handlers(bot)
+    handlers(bot)
 
 
 register_handlers()

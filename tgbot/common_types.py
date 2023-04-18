@@ -51,18 +51,3 @@ def convert_user_to_doc(u: User) -> Dict[str, Any]:
     d = dict(u)
     d.pop('_id')
     return d
-
-
-
-class City(TypedDict):
-    _id: Optional[str]
-    name: str
-    city_id: str
-
-
-def convert_doc_to_city(d: Dict[str, Any]) -> City:
-    return City(
-        _id=d["_id"],
-        name=d["name"],
-        city_id=d["city_id"]
-    )

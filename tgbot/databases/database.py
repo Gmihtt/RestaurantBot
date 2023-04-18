@@ -2,112 +2,74 @@ from typing import List, Tuple, Optional
 
 import pymongo
 from bson import ObjectId
-from pymongo import MongoClient, GEO2D
+from pymongo import MongoClient
 
-from tgbot.places.place import Place, convert_place_to_doc, convert_doc_to_place
-from tgbot.types import User, \
-    convert_user_to_doc, convert_doc_to_user, Admin, convert_admin_to_doc, convert_doc_to_admin, Post, \
-    convert_post_to_doc, convert_doc_to_post, City, convert_doc_to_city
-from tgbot.config import mongo_database, places_collection, users_collection, admins_collection, posts_collection, \
-    cities_collection
+from tgbot import common_types
+from tgbot.places import place
+from tgbot import config
 import logging
 
+from tgbot.posts import post
 
-class Database:
+
+class DatabaseOld:
     def __init__(self) -> None:
         self.client = MongoClient('localhost', 27017)
-        self.db = self.client[mongo_database]  # init db
-        self.places = self.db[places_collection]  # init places collections
-        self.places.create_index([("coordinates", GEO2D)])
-        self.users = self.db[users_collection]
-        self.admins = self.db[admins_collection]
-        self.posts = self.db[posts_collection]
-        self.cities = self.db[cities_collection]
+        self.db = self.client[config.mongo_database]  # init db
+        self.users = self.db[config.users_collection]
+        self.admins = self.db[config.admins_collection]
+        self.posts = self.db[config.posts_collection]
 
-    def add_place(self, place: Place) -> str:
-        logging.info("add: " + str(place))
-        doc = convert_place_to_doc(place)
-        return self.places.insert_one(doc).inserted_id
-
-    def add_places(self, places: List[Place]) -> List[str]:
-        logging.info("add: " + str(places))
-        doc = list(map(convert_place_to_doc, places))
-        return self.places.insert_many(doc).inserted_ids
-
-    def get_all_places(self) -> List[Place]:
-        return list(map(convert_doc_to_place, self.places.find()))
-
-    def find_close_place(self, coordinates: Tuple[float, float], skip: int, limit: int = 10) -> List[Place]:
-        q = {"coordinates": {"$near": coordinates}}
-        res_q = self.places.find(q, skip=skip, limit=limit)
-        res = []
-        for doc in res_q:
-            res.append(convert_doc_to_place(doc))
-        return res
-
-    def find_place(self, place_id: str) -> Optional[Place]:
-        val = self.places.find_one({"_id": ObjectId(place_id)})
-        if val is None:
-            return None
-        else:
-            return convert_doc_to_place(dict(val))
-
-    def delete_place(self, place_id: str):
-        return self.places.delete_one({"_id": ObjectId(place_id)})
-
-    def get_places_count(self) -> int:
-        return self.places.count_documents({})
-
-    def add_user(self, user: User) -> str:
+    def add_user(self, user: common_types.User) -> str:
         logging.info("add user: " + str(user))
         if self.get_user_by_tg_id(user["user_tg_id"]) is None:
-            val = convert_user_to_doc(user)
+            val = common_types.convert_user_to_doc(user)
             return self.users.insert_one(val).inserted_id
 
-    def get_all_users(self) -> [User]:
+    def get_all_users(self) -> [common_types.User]:
         users = self.users.find({})
         res = []
         for user in users:
-            res.append(convert_doc_to_user(user))
+            res.append(common_types.convert_doc_to_user(user))
         return res
 
-    def get_user_by_id(self, _id: str) -> Optional[User]:
+    def get_user_by_id(self, _id: str) -> Optional[common_types.User]:
         val = self.users.find_one({"_id": ObjectId(_id)})
         if val is None:
             return None
         else:
-            return convert_doc_to_user(dict(val))
+            return common_types.convert_doc_to_user(dict(val))
 
-    def get_user_by_tg_id(self, user_tg_id: int) -> Optional[User]:
+    def get_user_by_tg_id(self, user_tg_id: int) -> Optional[common_types.User]:
         val = self.users.find_one({"user_tg_id": user_tg_id})
         if val is None:
             return None
         else:
-            return convert_doc_to_user(dict(val))
+            return common_types.convert_doc_to_user(dict(val))
 
-    def get_user_by_username(self, username: str) -> Optional[User]:
+    def get_user_by_username(self, username: str) -> Optional[common_types.User]:
         val = self.users.find_one({"username": username})
         if val is None:
             return None
         else:
-            return convert_doc_to_user(dict(val))
+            return common_types.convert_doc_to_user(dict(val))
 
     def add_admin(self, username: str) -> Optional[str]:
         user = self.get_user_by_username(username)
         if user is None:
             return None
         else:
-            admin = Admin(_id=None, user_id=user["_id"])
+            admin = common_types.Admin(_id=None, user_id=user["_id"])
             logging.info("add admin: " + str(user))
-            val = convert_admin_to_doc(admin)
+            val = common_types.convert_admin_to_doc(admin)
             return self.admins.insert_one(val).inserted_id
 
-    def find_admin(self, _id: str) -> Optional[Admin]:
+    def find_admin(self, _id: str) -> Optional[common_types.Admin]:
         val = self.admins.find_one({"_id": ObjectId(_id)})
         if val is None:
             return None
         else:
-            return convert_doc_to_admin(dict(val))
+            return common_types.convert_doc_to_admin(dict(val))
 
     def delete_admin(self, username: str) -> bool:
         user = self.get_user_by_username(username)
@@ -131,55 +93,47 @@ class Database:
         else:
             return self.find_admin(user["_id"]) is not None
 
-    def add_post(self, post: Post) -> str:
-        logging.info("add post: " + str(post))
-        val = convert_post_to_doc(post)
+    def add_post(self, p: post.Post) -> str:
+        logging.info("add post: " + str(p))
+        val = post.convert_post_to_doc(p)
         return self.posts.insert_one(val).inserted_id
 
-    def find_post_by_name(self, post_name) -> Optional[Post]:
+    def find_post_by_name(self, post_name) -> Optional[post.Post]:
         val = self.posts.find_one({"name": post_name})
         if val is None:
             return None
         else:
-            return convert_doc_to_post(dict(val))
+            return post.convert_doc_to_post(dict(val))
 
-    def find_post_by_id(self, post_id: str) -> Optional[Post]:
+    def find_post_by_id(self, post_id: str) -> Optional[post.Post]:
         val = self.posts.find_one({"_id": ObjectId(post_id)})
         print(val)
         if val is None:
             return None
         else:
             print(val)
-            return convert_doc_to_post(dict(val))
+            return post.convert_doc_to_post(dict(val))
 
-    def update_post(self, post: Post):
-        val = convert_post_to_doc(post)
-        return self.posts.update_one({"_id": ObjectId(post["_id"])}, val)
+    def update_post(self, p: post.Post):
+        val = post.convert_post_to_doc(p)
+        return self.posts.update_one({"_id": ObjectId(p["_id"])}, val)
 
-    def delete_post(self, post: Post):
-        return self.posts.delete_one({"_id": ObjectId(post["_id"])})
+    def delete_post(self, p: post.Post):
+        return self.posts.delete_one({"_id": ObjectId(p["_id"])})
 
-    def get_posts(self) -> [Post]:
+    def get_posts(self) -> [post.Post]:
         posts = self.posts.find({}).limit(11).sort('date', pymongo.DESCENDING)
         res = []
-        for post in posts:
-            res.append(convert_doc_to_post(post))
+        for p in posts:
+            res.append(post.convert_doc_to_post(p))
         return res
 
-    def get_all_cities(self) -> [City]:
-        cities = self.cities.find({})
-        res = []
-        for city in cities:
-            res.append(convert_doc_to_city(city))
-        return res
 
-    def find_city_by_id(self, _id: str) -> Optional[City]:
-        val = self.cities.find_one({"_id": ObjectId(_id)})
-        if val is None:
-            return None
-        else:
-            return convert_doc_to_city(dict(val))
+class Database:
+    def __init__(self, collection_name: str) -> None:
+        self.client = MongoClient('localhost', 27017)
+        self.db = self.client[config.mongo_database]  # init db
+        self.collection = self.db[collection_name]
 
 
-db = Database()
-storage = Storage()
+db = DatabaseOld()

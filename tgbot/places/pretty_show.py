@@ -22,11 +22,11 @@ def pretty_show_place(place: Place, is_admin: bool) -> str:
     name = "Название: " + place['name'] + '\n'
     place_str = ""
     place_type = ""
-    if place['place_type'] == PlaceType.RESTAURANT:
+    if place['place_type'] == PlaceType.Restaurant:
         place_type = "Ресторан" + '\n'
         place_str = pretty_show_restaurant(place['place']) + '\n'
     address = "Адресс: " + place['address'] + '\n'
-    telephone = "Телефон: " + place['telephone'] + '\n'
+    telephone = "Телефон: " + place['phone'] + '\n'
     url = "" if place['url'] is None else place['url'] + '\n'
     work_interval = "Время работы: " + place['work_interval'] + '\n'
     description = "" if place['description'] is None else '\n' + place['description'] + '\n'

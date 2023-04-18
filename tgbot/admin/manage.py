@@ -1,7 +1,9 @@
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery, Message
 
-from tgbot.databases.database import storage, db
+from tgbot.common_keyboards import button_admin_menu
+from tgbot.databases.database import db
+from tgbot.databases.redis_storage import storage
 
 
 async def add_admin_message(call: CallbackQuery, bot: AsyncTeleBot):

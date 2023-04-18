@@ -1,12 +1,16 @@
 from datetime import datetime
 
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import Message, CallbackQuery, InputMediaPhoto
+from telebot.types import Message, CallbackQuery
 
-from tgbot.databases.database import db, storage
+from tgbot.databases.database import db
+from tgbot.utils import states
+from tgbot.utils import values
+from tgbot.posts.states import PostStates
 from tgbot.posts import keyboards
 from tgbot import common_keyboards
 from tgbot.posts.post import Post
+from tgbot.utils.functions import parse_file, send_files
 
 
 async def post_name_message(call: CallbackQuery, bot: AsyncTeleBot):
@@ -14,24 +18,30 @@ async def post_name_message(call: CallbackQuery, bot: AsyncTeleBot):
         raise Exception("callback message is None")
     await bot.delete_message(call.message.chat.id, call.message.id)
     user_id = str(call.from_user.id)
-    storage.add('admin_post_name' + user_id, "wait")
+    states.set_state(PostStates.Name, user_id)
     await bot.send_message(chat_id=call.message.chat.id, text="""Пришли мне название поста""")
 
 
 async def post_body_message(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
+    states.set_state(PostStates.Body, user_id)
     name = message.text
-    storage.add('admin_post_name' + user_id, name)
-    storage.add('admin_post_body' + user_id, "wait")
+    post = {
+        "name": name
+    }
+    values.add_values_to_map(post, user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Отправь мне текст поста""")
 
 
 async def add_post_body(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
+    states.set_state(PostStates.Files, user_id)
     body = message.text
-    storage.add('admin_post_body' + user_id, body)
-    storage.add('admin_photo_count' + user_id, "0")
+    post = {
+        "body": body
+    }
+    values.add_values_to_map(post, user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить фото?""",
                            reply_markup=common_keyboards.show_file(suffix="post"))
@@ -44,88 +54,52 @@ async def post_file_message(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def add_post_file(message: Message, bot: AsyncTeleBot):
-    user_id = str(message.from_user.id)
-    count = int(storage.get('admin_photo_count' + user_id))
-    if count >= 10:
-        await bot.send_message(chat_id=message.chat.id,
-                               text="""Вы прислали больше 10 фото""")
-        return
-    storage.add('admin_photo_count' + user_id, str(count + 1))
-    print(count)
-    if count == 0:
-        storage.add('admin_post_photos' + user_id, message.photo[0].file_id)
-    else:
-        file_ids = storage.get('admin_post_photos' + user_id)
-        storage.add('admin_post_photos' + user_id, file_ids + ',' + message.photo[0].file_id)
-    await bot.send_message(chat_id=message.chat.id,
-                           text="""Хотите ли вы добавить еще фото?""",
-                           reply_markup=common_keyboards.show_file(suffix="post"))
+    await parse_file(message, bot, "post")
 
 
 async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(call.message.chat.id, call.message.id)
     user_id = str(call.from_user.id)
+    states.set_state(PostStates.Approve, user_id)
     chat_id = call.message.chat.id
-    val = storage.get('admin_post_photos' + user_id)
-    if val is None:
-        file_ids = []
-    else:
-        file_ids = val.split(',')
+    files = values.get_files(user_id)
+    post = values.get_all_values_from_map(user_id)
     await bot.send_message(chat_id=chat_id, text="Вот что увидит пользователь:")
-    body = storage.get('admin_post_body' + user_id)
-    if len(file_ids) == 0:
-        await bot.send_message(chat_id=chat_id, text=body, reply_markup=keyboards.approve_post())
-    if len(file_ids) == 1:
-        await bot.send_photo(chat_id=chat_id,
-                             caption=body,
-                             reply_markup=keyboards.approve_post(),
-                             photo=file_ids[0])
-    else:
-        list_of_medias = []
-        for i, file_id in enumerate(file_ids):
-            list_of_medias.append(
-                InputMediaPhoto(media=file_id, caption=body if i == 0 else None)
-            )
-        await bot.send_media_group(chat_id=chat_id,
-                                   media=list_of_medias)
-        await bot.send_message(chat_id=chat_id, reply_markup=keyboards.approve_post(), text="Выберите")
+    await send_files(text=post["body"],
+                     chat_id=chat_id,
+                     files=files,
+                     bot=bot)
+    await bot.send_message(chat_id=chat_id, reply_markup=keyboards.approve_post(), text="Выберите")
 
 
 async def send_post(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
-    name = storage.pop('admin_post_name' + user_id)
-    msg = storage.pop('admin_post_body' + user_id)
-    file_ids = storage.pop('admin_post_photos' + user_id).split(',')
+    states.set_state(PostStates.Push, user_id)
+    post = values.get_all_values_from_map(user_id)
+    files = values.get_files(user_id)
+    values.delete_files(user_id)
 
     all_users = db.get_all_users()
     count = 0
     for user in all_users:
         if user["_id"] != int(user_id):
             try:
-                if len(file_ids) == 0:
-                    await bot.send_message(chat_id=user["chat_id"], text=msg)
-                elif len(file_ids) == 1:
-                    await bot.send_photo(chat_id=user["chat_id"], caption=msg, photo=file_ids[0])
-                else:
-                    list_of_medias = []
-                    for i, file_id in enumerate(file_ids):
-                        list_of_medias.append(
-                            InputMediaPhoto(media=file_id, caption=msg if i == 0 else None)
-                        )
-                    await bot.send_media_group(chat_id=user["chat_id"],
-                                               media=list_of_medias)
+                await send_files(text=post["body"],
+                                 chat_id=user["chat_id"],
+                                 files=files,
+                                 bot=bot)
             except BaseException as e:
                 continue
             else:
                 count += 1
     post = Post(
         _id=None,
-        name=name,
-        body=msg,
+        name=post['name'],
+        body=post['body'],
         count_users=count,
         user_id=int(user_id),
         date=datetime.now(),
-        photos=file_ids
+        files=files
     )
     post_id = db.add_post(post)
     await bot.send_message(chat_id=call.message.chat.id, text=f"""Пост отправлен, его id: {post_id}""")

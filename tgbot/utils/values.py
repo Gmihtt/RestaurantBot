@@ -1,17 +1,17 @@
 from typing import Dict, List
 
+from tgbot.common_types import File, FileTypes
 from tgbot.databases.redis_storage import storage
-from tgbot.types import File, FileTypes
 
 
 def set_value(value: str, user_id: str):
     key = 'value' + user_id
-    storage.add_val(key, value)
+    storage.add_value(key, value)
 
 
 def get_value(user_id: str) -> str:
     key = 'value' + user_id
-    return storage.get_val(key)
+    return storage.get_value(key)
 
 
 def add_file_to_list(file: File, user_id: str):
@@ -51,3 +51,8 @@ def add_values_to_map(values: Dict[str, str], user_id: str):
 def get_all_values_from_map(user_id: str) -> Dict[str, str]:
     name = 'map_of_value' + user_id
     return storage.get_map(name)
+
+
+def clean_map(user_id: str):
+    name = 'map_of_value' + user_id
+    clean_map(name)
