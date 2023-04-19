@@ -28,12 +28,14 @@ def get_count_files(user_id: str) -> int:
 def get_files(user_id: str) -> List[File]:
     key = 'list_of_values' + user_id
     values = storage.get_list_of_values(key)
+    print(values)
     res = []
     for value in values:
+        print(value)
         val = value.split(',')
         res.append(File(
             file_id=val[0],
-            file=FileTypes[val[1]]
+            file=FileTypes(val[1])
         ))
     return res
 
@@ -55,4 +57,4 @@ def get_all_values_from_map(user_id: str) -> Dict[str, str]:
 
 def clean_map(user_id: str):
     name = 'map_of_value' + user_id
-    clean_map(name)
+    storage.clean_map(name)

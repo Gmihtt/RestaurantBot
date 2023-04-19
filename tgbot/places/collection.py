@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional, Any, Dict
 
 from bson import ObjectId
@@ -19,6 +20,8 @@ class PlaceCollection(Database):
         res_q = self.collection.find(q, skip=skip, limit=limit)
         res = []
         for doc in res_q:
+            print(doc)
+            print(place.convert_doc_to_place(doc))
             res.append(place.convert_doc_to_place(doc))
         return res
 
@@ -40,8 +43,10 @@ class PlaceCollection(Database):
                 return place.convert_doc_to_place(dict(val))
 
     def update_place(self, p: place.Place):
+        logging.info("update: " + str(p))
         new_place = place.convert_place_to_doc(p)
-        self.collection.update_one({"_id": ObjectId(p['_id'])}, new_place)
+        new_place.pop('_id')
+        self.collection.update_one({"_id": ObjectId(p['_id'])}, {"$set": new_place})
 
     def get_places_count(self) -> int:
         return self.collection.count_documents({})

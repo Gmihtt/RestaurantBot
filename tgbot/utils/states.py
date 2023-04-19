@@ -27,10 +27,9 @@ def get_state(user_id: str) -> States:
 
     if val is None:
         raise Exception(f"user with {user_id} don't have state!!")
-
     if val.find("place") != -1:
-        return PlaceStates[val[len("place"):]]
+        return PlaceStates(val[len("place"):])
     if val.find("intro") != -1:
-        return IntroStates[val[len("intro"):]]
+        return IntroStates(val[len("intro"):])
     if val.find("post") != -1:
-        return PostStates[val[len("post"):]]
+        return PostStates(val[len("post"):])

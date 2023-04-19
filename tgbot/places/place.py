@@ -1,9 +1,8 @@
-from enum import auto
 from typing import TypedDict, Optional, Union, List, Dict, Any
 
 from strenum import StrEnum
 
-from tgbot.common_types import File
+from tgbot.common_types import File, convert_file_to_dict, convert_dict_to_file
 
 
 class Coordinates(TypedDict):
@@ -12,7 +11,7 @@ class Coordinates(TypedDict):
 
 
 class PlaceType(StrEnum):
-    Restaurant = auto()
+    Restaurant = "restaurant"
 
 
 class Restaurant(TypedDict):
@@ -24,7 +23,7 @@ class Restaurant(TypedDict):
 
 
 class Place(TypedDict):
-    _id: Optional[str]
+    _id: str
     name: str
     city: str
     address: str
@@ -49,7 +48,7 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
             "first": d['coordinates']['first'],
             "second": d['coordinates']['second'],
         },
-        "files": d['files'],
+        "files": list(map(convert_dict_to_file, d['files'])),
         "phone": d.get('phone'),
         "url": d.get('url'),
         "work_interval": d.get('work_interval'),
@@ -59,15 +58,18 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
     if d.get('place_type') is not None:
         place_type = PlaceType(d['place_type'])
         place['place_type'] = place_type
-        if place_type == PlaceType.Restaurant:
-            restaurant = Restaurant(
-                mid_price=d['place'].get('mid_price'),
-                business_lunch=d['place']['business_lunch'],
-                business_lunch_price=d['place'].get('business_lunch_price'),
-                kitchen=d['place']['kitchen'],
-                vegan=d['place']['vegan']
-            )
-            place['place'] = restaurant
+        if d.get('place') is not None:
+            if place_type == PlaceType.Restaurant:
+                restaurant = Restaurant(
+                    mid_price=d['place'].get('mid_price'),
+                    business_lunch=d['place']['business_lunch'],
+                    business_lunch_price=d['place'].get('business_lunch_price'),
+                    kitchen=d['place']['kitchen'],
+                    vegan=d['place']['vegan']
+                )
+                place['place'] = restaurant
+        else:
+            place['place'] = None
     else:
         place['place_type'] = None
         place['place'] = None
@@ -76,6 +78,11 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
 
 def convert_place_to_doc(p: Place) -> Dict[str, Any]:
     d = dict(p)
+    print(d)
+    d['_id'] = str(p['_id'])
+    print(d['_id'])
     d['place_type'] = p.get('place_type').value
-    d['files'] = list(map(lambda f: (f[0], f[1].value), p.get('files')))
+    print(d['place_type'])
+    d['files'] = list(map(convert_file_to_dict, p['files']))
+    print(d['files'])
     return d

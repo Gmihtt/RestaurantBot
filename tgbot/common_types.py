@@ -13,6 +13,20 @@ class File(TypedDict):
     file: FileTypes
 
 
+def convert_file_to_dict(file: File) -> Dict[str, str]:
+    return {
+        "file_id": file['file_id'],
+        "file": file['file'].value
+    }
+
+
+def convert_dict_to_file(d: Dict[str, str]) -> File:
+    return File(
+        file_id=d['file_id'],
+        file=FileTypes(d['file'])
+    )
+
+
 class Admin(TypedDict):
     _id: Optional[str]
     user_id: str

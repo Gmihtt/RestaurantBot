@@ -17,6 +17,3 @@ def intro_handlers(bot: AsyncTeleBot):
     bot.register_message_handler(intro.send_help,
                                  commands=['help'],
                                  pass_bot=True)
-    bot.register_message_handler(intro.send_help,
-                                 content_types=['photo', 'text', 'video', 'document'],
-                                 pass_bot=True)

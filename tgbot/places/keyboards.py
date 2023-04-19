@@ -26,12 +26,10 @@ def show_places(places: List[Place], start: bool) -> InlineKeyboardMarkup:
     return markup
 
 
-def show_place(is_admin: bool, place_id: str) -> InlineKeyboardMarkup:
+def show_place() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.row_width = 1
-    if is_admin:
-        markup.add(InlineKeyboardButton("Удалить место", callback_data="delete_place" + place_id))
-    markup.add(InlineKeyboardButton("🔙", callback_data="places_cur"))
+    markup.add(InlineKeyboardButton("Вернуться к списку", callback_data="places_cur"))
     return markup
 
 
@@ -58,8 +56,9 @@ def show_all_places_types():
 def show_all_kitchens():
     markup = InlineKeyboardMarkup()
     line = []
+    print(len(kitchens))
     for kitchen in kitchens:
-        line.append(InlineKeyboardButton(kitchen, callback_data=kitchens))
+        line.append(InlineKeyboardButton(kitchen, callback_data=kitchen))
         if len(line) == 3:
             markup.add(*line, row_width=3)
             line = []
@@ -82,7 +81,7 @@ def show_all_places_type():
 def approve_place():
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Добавить место', callback_data="push_place"),
-               InlineKeyboardButton('Начать с начала', callback_data="add_place"),
+               InlineKeyboardButton('Начать с начала', callback_data="place"),
                row_width=2)
     markup.add(InlineKeyboardButton('Вернуться в меню', callback_data="admin_user"),
                row_width=1)

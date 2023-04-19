@@ -64,7 +64,7 @@ async def place_search_parse(message: Message, bot: AsyncTeleBot):
     else:
         values.add_values_to_map({"_id": str(place['_id'])}, user_id)
         await bot.send_message(chat_id=message.chat.id,
-                               text="Место найдено, выберите, заполните данные")
+                               text="Место найдено")
         await place_send_restaurant_message(user_id, message.chat.id, bot)
 
 
@@ -110,16 +110,16 @@ async def place_restaurant_parse(message: Message, bot: AsyncTeleBot):
 
 async def add_kitchen(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     kitchen = call.data
     values.add_values_to_map({"kitchen": kitchen}, user_id)
+    states.set_state(PlaceStates.AddFiles, user_id)
     await bot.send_message(chat_id=call.message.chat.id,
-                           text="""Хотите ли вы добавить еще фото, видео или файл?""",
+                           text="""Кухня добавлена\nХотите ли вы добавить еще фото или видео?""",
                            reply_markup=common_keyboards.show_file(suffix="place"))
 
 
 async def place_file_message(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    states.set_state(PlaceStates.AddFiles, user_id)
     await bot.delete_message(call.message.chat.id, call.message.id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Отправь мне до 10 медиа, которые хотите добавить к посту\n"""
@@ -141,6 +141,8 @@ async def place_description_msg(call: CallbackQuery, bot: AsyncTeleBot):
 def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Optional[Place]:
     place_map = values.get_all_values_from_map(user_id)
     place = place_collection.find_place_by_id(place_map['_id'])
+    print(place)
+    print(place_map)
     if place is None:
         return None
 
@@ -148,8 +150,7 @@ def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Option
         restaurant = Restaurant(
             mid_price=None if place_map['mid_price'] == "нет" else place_map['mid_price'],
             business_lunch=place_map['business_lunch'] == "да",
-            business_lunch_price=
-            None if place_map['business_lunch_price'] == "нет" else place_map['business_lunch_price'],
+            business_lunch_price=None if place_map['business_lunch_price'] == "нет" else place_map['business_lunch_price'],
             kitchen=place_map['kitchen'],
             vegan=place_map['vegan'] == "да",
         )
@@ -163,13 +164,14 @@ async def place_approve(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
     states.set_state(PlaceStates.Approve, user_id)
     files = values.get_files(user_id)
+    print(files)
     place = get_place_from_storage(data=message.text,
                                    user_id=user_id,
                                    files=files)
     chat_id = message.chat.id
     await bot.send_message(chat_id=chat_id,
-                           text="""пользователи увидят такое место, если вы его добавите""")
-    await send_files(text=pretty_show_place(place, is_admin=True),
+                           text="""пользователи увидят такое место, если вы его добавите\n""")
+    await send_files(text=pretty_show_place(place),
                      chat_id=chat_id,
                      files=files,
                      bot=bot)
@@ -184,10 +186,11 @@ async def push_place(call: CallbackQuery, bot: AsyncTeleBot):
     place = get_place_from_storage(data=call.data,
                                    user_id=str(call.from_user.id),
                                    files=files)
+    place['last_modify_id'] = int(user_id)
     values.clean_map(user_id)
     values.delete_files(user_id)
-    place_id = place_collection.update_place(place)
+    place_collection.update_place(place)
     chat_id = call.message.chat.id
     await bot.send_message(chat_id=chat_id,
-                           text=f"Место добавлено и вот его id: {place_id}",
+                           text=f"Место обновлено",
                            reply_markup=common_keyboards.button_admin_menu())

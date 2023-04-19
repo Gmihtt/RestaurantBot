@@ -5,12 +5,12 @@ from tgbot.config import main_admins
 
 def show_admin_menu(user_id: int):
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('Меню рекламы', callback_data="post"))
-    markup.add(InlineKeyboardButton('Меню мест', callback_data="place"))
+    markup.add(InlineKeyboardButton('Реклама', callback_data="post"))
+    markup.add(InlineKeyboardButton('Места', callback_data="place"))
     if user_id in main_admins:
-        markup.add(InlineKeyboardButton('Меню админа', callback_data="admin"))
+        markup.add(InlineKeyboardButton('Админы', callback_data="admin"))
         markup.add(InlineKeyboardButton('Статистика', callback_data="statistics"))
-    markup.add(InlineKeyboardButton('Меню пользователя', callback_data="user"))
+    markup.add(InlineKeyboardButton('Пользовательское меню', callback_data="user"))
     return markup
 
 

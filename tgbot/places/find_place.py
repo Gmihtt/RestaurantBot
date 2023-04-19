@@ -74,12 +74,12 @@ async def show_places_next_or_back(call: CallbackQuery, bot: AsyncTeleBot, pred:
 async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(call.message.chat.id, call.message.id)
     place_id = call.data[len("place_id"):]
-    place = place_collection.find_place(place_id)
+    place = place_collection.find_place_by_id(place_id)
     user_id = str(call.from_user.id)
     states.set_state(PlaceStates.ShowPlace, user_id)
-    await send_files(text=pretty_show_place(place, is_admin=is_admin(user_id)),
+    await send_files(text=pretty_show_place(place),
                      chat_id=call.message.chat.id,
                      files=place['files'],
                      bot=bot)
-    await bot.send_message(chat_id=call.message.chat.id, text="Выберите",
-                           reply_markup=keyboards.show_place(is_admin=is_admin(user_id), place_id=place_id))
+    await bot.send_message(chat_id=call.message.chat.id, text="Вы можете",
+                           reply_markup=keyboards.show_place())

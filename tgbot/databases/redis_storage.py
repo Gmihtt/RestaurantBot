@@ -31,7 +31,7 @@ class Storage:
         if size == 0:
             return []
         else:
-            self.r.lrange(key, 0, size - 1)
+            return self.r.lrange(key, 0, size - 1)
 
     def delete_list(self, key: str):
         size = self.size_of_list(key)
