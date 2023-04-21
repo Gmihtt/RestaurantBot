@@ -19,20 +19,18 @@ async def send_files(text: str,
                      files: List[File],
                      bot: AsyncTeleBot):
     if len(files) == 0:
-        #print(chat_id, text)
-        await bot.send_message(chat_id=chat_id, text=text)
-        return
+        return await bot.send_message(chat_id=chat_id, text=text)
     if len(files) == 1:
         file_type = files[0]['file']
         file_id = files[0]['file_id']
         if file_type == FileTypes.Photo:
-            await bot.send_photo(chat_id=chat_id,
-                                 caption=text,
-                                 photo=file_id)
+            return await bot.send_photo(chat_id=chat_id,
+                                        caption=text,
+                                        photo=file_id)
         if file_type == FileTypes.Video:
-            await bot.send_video(chat_id=chat_id,
-                                 caption=text,
-                                 video=file_id)
+            return await bot.send_video(chat_id=chat_id,
+                                        caption=text,
+                                        video=file_id)
     else:
         list_of_medias = []
         for i, file in enumerate(files):
@@ -46,8 +44,8 @@ async def send_files(text: str,
                 list_of_medias.append(
                     InputMediaVideo(media=file_id, caption=text if i == 0 else None)
                 )
-        await bot.send_media_group(chat_id=chat_id,
-                                   media=list_of_medias)
+        return await bot.send_media_group(chat_id=chat_id,
+                                          media=list_of_medias)
 
 
 async def parse_file(message: Message, bot: AsyncTeleBot, suffix: str):

@@ -58,3 +58,8 @@ def get_all_values_from_map(user_id: str) -> Dict[str, str]:
 def clean_map(user_id: str):
     name = 'map_of_value' + user_id
     storage.clean_map(name)
+
+
+def delete_value_from_map(key: str, user_id: str):
+    name = 'map_of_value' + user_id
+    storage.delete_val_from_map(name, key)

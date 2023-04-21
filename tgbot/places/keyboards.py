@@ -28,8 +28,8 @@ def show_places(places: List[Place], start: bool) -> InlineKeyboardMarkup:
 
 def show_place() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
-    markup.row_width = 1
     markup.add(InlineKeyboardButton("Вернуться к списку", callback_data="places_cur"))
+    markup.add(InlineKeyboardButton("Точка ресторана", callback_data="place_position"))
     return markup
 
 
