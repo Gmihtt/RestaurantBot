@@ -47,5 +47,9 @@ class Storage:
         keys = self.r.hkeys(name)
         self.r.hdel(name, *keys)
 
+    def delete_val_from_map(self, name, key):
+        keys = [key]
+        self.r.hdel(name, *keys)
+
 
 storage = Storage()

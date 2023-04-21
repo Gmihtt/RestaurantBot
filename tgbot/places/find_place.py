@@ -5,8 +5,9 @@ from telebot.types import CallbackQuery
 
 from tgbot.places import keyboards
 from tgbot.places.collection import place_collection
+from tgbot.places.place import Coordinates
 from tgbot.places.pretty_show import pretty_show_place
-from tgbot.utils.functions import send_files, is_admin
+from tgbot.utils.functions import send_files
 from tgbot.places.states import PlaceStates
 from tgbot.utils import states, values
 
@@ -37,6 +38,14 @@ async def show_back(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def show_cur(call: CallbackQuery, bot: AsyncTeleBot):
+    user_id = str(call.from_user.id)
+    d = values.get_all_values_from_map(user_id)
+    if d.get('message_id') is not None:
+        await bot.delete_message(call.message.chat.id, int(d.get('message_id')))
+        values.delete_value_from_map('message_id', user_id)
+    if d.get('location_id') is not None:
+        await bot.delete_message(call.message.chat.id, int(d.get('location_id')))
+        values.delete_value_from_map('location_id', user_id)
     await show_places_next_or_back(call, bot)
 
 
@@ -50,15 +59,18 @@ async def show_places_next_or_back(call: CallbackQuery, bot: AsyncTeleBot, pred:
     new_loc = loc.split(",")
     if pred is not None:
         skip = skip + 10 if pred else skip - 10
-    lon, lat = float(new_loc[0]), float(new_loc[1])
-    places = place_collection.find_close_place((lon, lat), skip=skip)
+    crds = Coordinates(
+        first=float(new_loc[0]),
+        second=float(new_loc[1])
+    )
+    places = place_collection.find_close_place(crds, skip=skip)
     if len(places) == 0 and pred is not None:
         if pred:
             skip -= 10
-            places = place_collection.find_close_place((lon, lat), skip=skip)
+            places = place_collection.find_close_place(crds, skip=skip)
         else:
             skip += 10
-            places = place_collection.find_close_place((lon, lat), skip=skip)
+            places = place_collection.find_close_place(crds, skip=skip)
         await bot.send_message(chat_id=call.message.chat.id, text="""
             Вы докрутили до конца списка:(
             """, reply_markup=keyboards.show_places(places, start=skip == 0))
@@ -77,9 +89,29 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
     place = place_collection.find_place_by_id(place_id)
     user_id = str(call.from_user.id)
     states.set_state(PlaceStates.ShowPlace, user_id)
-    await send_files(text=pretty_show_place(place),
-                     chat_id=call.message.chat.id,
-                     files=place['files'],
-                     bot=bot)
+    message = await send_files(text=pretty_show_place(place),
+                               chat_id=call.message.chat.id,
+                               files=place['files'],
+                               bot=bot)
     await bot.send_message(chat_id=call.message.chat.id, text="Вы можете",
                            reply_markup=keyboards.show_place())
+    print(place_id)
+    message_info = {
+        "message_id": message.id,
+        "place_id": place_id
+    }
+    values.add_values_to_map(message_info, user_id)
+
+
+async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
+
+    user_id = str(call.from_user.id)
+    d = values.get_all_values_from_map(user_id)
+    print(d['place_id'])
+    place = place_collection.find_place_by_id(d['place_id'])
+    print("PLACEID: ", place)
+    location = place['coordinates']
+    message = await bot.send_location(chat_id=call.message.chat.id,
+                                      longitude=location['first'],
+                                      latitude=location['second'])
+    values.add_values_to_map({"location_id": str(message.id)}, user_id)

@@ -57,3 +57,6 @@ def find_place_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(find_place.show_place,
                                         func=lambda c: find_callback_text(c, "place_id"),
                                         pass_bot=True)
+    bot.register_callback_query_handler(find_place.send_location,
+                                        func=lambda c: find_callback_text(c, "place_position"),
+                                        pass_bot=True)
