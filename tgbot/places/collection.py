@@ -8,6 +8,7 @@ from tgbot import config
 from tgbot.databases.mongo_db import Database
 from tgbot.places import place
 from tgbot.places.place import Coordinates
+from tgbot.utils import values
 
 
 class PlaceCollection(Database):
@@ -15,13 +16,38 @@ class PlaceCollection(Database):
         Database.__init__(self, config.places_collection)
         self.collection.create_index([("coordinates", GEO2D)])
 
-    def find_close_place(self, coordinates: Coordinates, skip: int, limit: int = 10) -> List[place.Place]:
-        q = {"coordinates": {"$near": coordinates}}
-        res_q = self.collection.find(q, skip=skip, limit=limit)
+    def find_close_place(
+            self,
+            coordinates: Coordinates,
+            user_id: str,
+            skip: int,
+            limit: int = 5) -> List[place.Place]:
+        q = {"coordinates": {"$nearSphere": coordinates}}
+
+        filters = values.get_all_values_from_map('filters_map', user_id)
+        if filters.get('vegan') is not None and filters.get('vegan') != "False":
+            q['place.vegan'] = True
+        if filters.get('terrace') is not None and filters.get('terrace') != "False":
+            q['place.features'] = {"$in": ["Летняя веранда"]}
+        if filters.get('hookah') is not None and filters.get('hookah') != "False":
+            q['place.features'] = {"$in": ["Кальян-бар"]}
+
+        kitchens = values.get_list('kitchens', user_id)
+        if kitchens:
+            q['place.kitchens'] = {"$in": kitchens}
+
+        if filters.get('mid_price') is not None:
+            if int(filters['mid_price']) <= 5000:
+                q['mid_price'] = {"$lte": int(filters['mid_price'])}
+            else:
+                q['mid_price'] = {"$gte": int(filters['mid_price'])}
+
+        if filters.get('raring') is not None:
+            q['raring'] = {"$gte": float(filters['raring'])}
+
+        res_q = self.collection.find(q, skip=skip, limit=limit, )
         res = []
         for doc in res_q:
-            print(doc)
-            print(place.convert_doc_to_place(doc))
             res.append(place.convert_doc_to_place(doc))
         return res
 

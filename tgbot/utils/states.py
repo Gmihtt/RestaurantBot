@@ -26,7 +26,8 @@ def get_state(user_id: str) -> States:
     val = storage.get_value(key)
 
     if val is None:
-        raise Exception(f"user with {user_id} don't have state!!")
+        set_state(IntroStates.Welcome, user_id)
+        return IntroStates.Welcome
     if val.find("place") != -1:
         return PlaceStates(val[len("place"):])
     if val.find("intro") != -1:

@@ -1,5 +1,6 @@
 from typing import List
 
+import mpu
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InputMediaPhoto, InputMediaVideo, Message
 
@@ -7,6 +8,7 @@ from tgbot import common_keyboards
 from tgbot.common_types import File, FileTypes
 from tgbot.config import main_admins
 from tgbot.databases.database import db
+from tgbot.places.place import Coordinates
 from tgbot.utils import values
 
 
@@ -72,3 +74,10 @@ async def parse_file(message: Message, bot: AsyncTeleBot, suffix: str):
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото или видео?""",
                            reply_markup=common_keyboards.show_file(suffix))
+
+
+def count_distance(crds1: Coordinates, crds2: Coordinates):
+    return mpu.haversine_distance(
+        (crds1['latitude'], crds1['longitude']),
+        (crds2['latitude'], crds2['longitude'])
+    )
