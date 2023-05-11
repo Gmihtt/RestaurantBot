@@ -69,3 +69,19 @@ def find_place_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(find_place.send_site,
                                         func=lambda c: find_callback_text(c, "place_site"),
                                         pass_bot=True)
+    bot.register_callback_query_handler(find_place.show_favorite_places,
+                                        func=
+                                        lambda c: find_callback_text(c, "favorites"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.show_favorite_places,
+                                        func=lambda c: check_state(c, PlaceStates.FavoritePlaces),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.favorite_change,
+                                        func=lambda c: find_callback_text(c, "favorite_delete"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.favorite_change,
+                                        func=lambda c: find_callback_text(c, "favorite_add"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.favorite_change,
+                                        func=lambda c: check_state(c, PlaceStates.FavoriteDelete),
+                                        pass_bot=True)

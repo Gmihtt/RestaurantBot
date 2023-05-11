@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from bson import ObjectId
 
@@ -18,7 +18,7 @@ class UserCollection(Database):
             val = user.convert_user_to_doc(u)
             return self.collection.insert_one(val).inserted_id
 
-    def get_all_users(self) -> [user.User]:
+    def get_all_users(self) -> List[user.User]:
         users = self.collection.find({})
         res = []
         for u in users:
@@ -33,6 +33,8 @@ class UserCollection(Database):
             return user.convert_doc_to_user(dict(val))
 
     def get_user_by_tg_id(self, user_tg_id: int) -> Optional[user.User]:
+        if type(user_tg_id) is str:
+            user_tg_id = int(user_tg_id)
         val = self.collection.find_one({"user_tg_id": user_tg_id})
         if val is None:
             return None
@@ -45,6 +47,9 @@ class UserCollection(Database):
             return None
         else:
             return user.convert_doc_to_user(dict(val))
+
+    def update_favorites(self, user_tg_id: int, new_favorites: List[str]):
+        self.collection.update_one({"user_tg_id": user_tg_id}, {"$set": {"favorites": new_favorites}})
 
     def set_city(self, user_tg_id: int, city: str):
         return self.collection.update_one({"user_tg_id": user_tg_id}, {"$set": {"city": city}})

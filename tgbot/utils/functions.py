@@ -81,3 +81,10 @@ def count_distance(crds1: Coordinates, crds2: Coordinates):
         (crds1['latitude'], crds1['longitude']),
         (crds2['latitude'], crds2['longitude'])
     )
+
+
+async def delete_message(chat_id: int, msg_id: int, bot: AsyncTeleBot):
+    try:
+        await bot.delete_message(chat_id, msg_id)
+    except Exception:
+        return

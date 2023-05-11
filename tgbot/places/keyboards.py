@@ -43,13 +43,20 @@ def show_places(
     return markup
 
 
-def show_place(phone: bool, site: bool) -> InlineKeyboardMarkup:
+def show_place(place_id: str,
+               phone: bool,
+               site: bool,
+               favorite: bool) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("Показать на карте", callback_data="place_position"))
     if phone:
         markup.add(InlineKeyboardButton("Позвонить", callback_data="place_phone"))
     if site:
         markup.add(InlineKeyboardButton("Сайт", callback_data="place_site"))
+    if favorite:
+        markup.add(InlineKeyboardButton("Удалить из избранного", callback_data="favorite_delete" + place_id))
+    if not favorite:
+        markup.add(InlineKeyboardButton("Добавить в избранное", callback_data="favorite_add" + place_id))
     markup.add(InlineKeyboardButton("Вернуться к списку", callback_data="places_cur"))
     return markup
 
@@ -79,5 +86,35 @@ def not_found():
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Без фильтров', callback_data="without_filters"),
                InlineKeyboardButton('К фильтрам', callback_data="filters"),
+               row_width=2)
+    return markup
+
+
+def show_favorite_places(places: List[Place], pos: int):
+    markup = InlineKeyboardMarkup()
+    cur_places = places[pos: pos + 5]
+    for cur_place in cur_places:
+        markup.add(InlineKeyboardButton(cur_place['name'],
+                                        callback_data="place_id" + str(cur_place['_id']),
+                                        row_width=1))
+
+    if 0 < pos < len(places) - 5:
+        markup.add(InlineKeyboardButton('⬅️', callback_data="back" + str(pos - 5)),
+                   InlineKeyboardButton('➡️', callback_data="next" + str(pos + 5)),
+                   row_width=2)
+    elif pos == 0 and len(places) >= 5:
+        markup.add(InlineKeyboardButton('➡️', callback_data="next" + str(pos + 5)),
+                   row_width=1)
+    elif pos >= 5:
+        markup.add(InlineKeyboardButton('⬅️', callback_data="back" + str(pos - 5)),
+                   row_width=1)
+    markup.add(InlineKeyboardButton('В меню', callback_data="main_menu"))
+    return markup
+
+
+def favorite_delete_approve(place_id: str):
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("Да", callback_data="delete_yes" + place_id),
+               InlineKeyboardButton("Нет", callback_data="delete_no" + place_id),
                row_width=2)
     return markup

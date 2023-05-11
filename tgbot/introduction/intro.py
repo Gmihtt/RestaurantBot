@@ -5,6 +5,7 @@ from telebot.types import Message, CallbackQuery
 
 from tgbot.introduction import user
 from tgbot.introduction.collection import user_collection
+from tgbot.introduction.user import User
 from tgbot.photos import save_photos
 from tgbot.utils import states, values
 from tgbot.config import main_admins
@@ -64,7 +65,7 @@ async def welcome(
         bot: AsyncTeleBot):
     user_id = user_id
     states.set_state(IntroStates.MainMenu, str(user_id))
-    await save_user(
+    u = await save_user(
         user_id=user_id,
         chat_id=chat_id,
         username=username
@@ -72,12 +73,14 @@ async def welcome(
     await bot.send_message(
         chat_id=chat_id,
         text=intro_text,
-        reply_markup=keyboards.main_menu()
+        reply_markup=keyboards.main_menu(favorites=u['favorites'] != [])
     )
 
 
-async def save_user(user_id: int, chat_id: int, username: Optional[str]):
-    if user_collection.get_user_by_tg_id(user_id) is None:
+async def save_user(user_id: int, chat_id: int, username: Optional[str]) -> User:
+    u = user_collection.get_user_by_tg_id(user_id)
+    if u is None:
+        print("save user")
         u = user.User(
             _id=None,
             user_tg_id=user_id,
@@ -88,6 +91,7 @@ async def save_user(user_id: int, chat_id: int, username: Optional[str]):
             favorites=[]
         )
         user_collection.add_user(u)
+    return u
 
 
 async def show_admin_menu(call: CallbackQuery, bot: AsyncTeleBot):
@@ -143,6 +147,9 @@ async def show_filters(user_id: str):
         if filters_map.get('rating') is not None:
             rating = filters_map['rating']
             text += '\n' + "Рейтинг от: " + rating
+
+        if filters_map.get('business') is not None:
+            text += '\n' + "Бизнес-ланч: " + ("да" if filters_map['business'] == 'True' else "нет")
 
         if filters_map.get('vegan') is not None:
             text += '\n' + "Веганское меню: " + ("да" if filters_map['vegan'] == 'True' else "нет")

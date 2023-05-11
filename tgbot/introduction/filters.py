@@ -16,8 +16,8 @@ async def set_filters(call: CallbackQuery, bot: AsyncTeleBot):
 
     if not filters_map:
         values.add_values_to_map('filters_map', {'vegan': str(False)}, str(user_id))
-        values.add_values_to_map('filters_map', {'terrace': str(False)}, str(user_id))
         values.add_values_to_map('filters_map', {'hookah': str(False)}, str(user_id))
+        values.add_values_to_map('filters_map', {'business': str(False)}, str(user_id))
         filters_map = values.get_all_values_from_map('filters_map', user_id)
 
     else:
@@ -41,13 +41,13 @@ async def set_filters(call: CallbackQuery, bot: AsyncTeleBot):
             text += '\n' + "Рейтинг от: " + rating
 
     vegan = filters_map['vegan'] == 'True'
-    terrace = filters_map['terrace'] == 'True'
     hookah = filters_map['hookah'] == 'True'
+    business = filters_map['business'] == 'True'
 
     await bot.send_message(
         chat_id=call.message.chat.id,
         text=text,
-        reply_markup=keyboards.filters(vegan, terrace, hookah)
+        reply_markup=keyboards.filters(vegan, business, hookah)
     )
 
 
@@ -105,8 +105,8 @@ async def set_vegan(call: CallbackQuery, bot: AsyncTeleBot):
     await set_value('vegan', call, bot)
 
 
-async def set_terrace(call: CallbackQuery, bot: AsyncTeleBot):
-    await set_value('terrace', call, bot)
+async def set_business(call: CallbackQuery, bot: AsyncTeleBot):
+    await set_value('business', call, bot)
 
 
 async def set_hookah(call: CallbackQuery, bot: AsyncTeleBot):
@@ -176,6 +176,7 @@ async def filter_rating(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def msg_drop_filters(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(call.message.chat.id, call.message.id)
+    print("hello")
     user_id = str(call.from_user.id)
     state = states.get_state(user_id)
     values.set_value('last_state', str(state), user_id)

@@ -5,21 +5,26 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
     mid_price = ""
     if rest.get('mid_price') is not None:
         mid_price = 'средний чек: ' + str(rest['mid_price']) + '\n'
-    if rest['business_lunch']:
-        business_lunch_price = 'цена бизнес-ланча: ' + str(rest['business_lunch_price']) + '\n'
-    else:
-        business_lunch_price = "бизнес-ланча: нет" + '\n'
     kitchen = ""
     if rest.get('kitchens') is not None:
-        kitchens = str(rest['kitchens'])[1:-1].split(',')
-        kitchen = 'кухни: '
+        kitchens = rest['kitchens']
+        kitchen = "кухни: "
+        print(kitchens)
         for k in kitchens:
-            kitchen += k
+            kitchen += k + ' '
+        kitchen += '\n'
+    vegan = ""
     if rest['vegan']:
         vegan = 'веганская еда: есть' + '\n'
+    business = ""
+    if "Бизнес-ланч" in rest['features']:
+        business = "бизнес ланч: есть" + '\n'
+    terrace = ""
+    if "Летняя веранда" in rest['features']:
+        terrace = "терраса: есть" + '\n'
     else:
         vegan = "веганска еда: нет" + '\n'
-    return mid_price + business_lunch_price + kitchen + vegan
+    return mid_price + kitchen + vegan + business + terrace
 
 
 def pretty_show_place(place: Place) -> str:
@@ -34,7 +39,9 @@ def pretty_show_place(place: Place) -> str:
     address = "Адрес: " + place['address'] + '\n'
     work_interval = ""
     if place.get('work_interval') is not None:
-        work_interval = "Время работы: " + place['work_interval'] + '\n'
+        work_interval = "Время работы: \n"
+        for work_int in place['work_interval'].split(';'):
+            work_interval += "      " + work_int.strip() + "\n"
     description = ""
     if place.get('description') is not None:
         description = place['description'] + '\n'

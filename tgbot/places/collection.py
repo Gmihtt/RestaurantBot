@@ -27,8 +27,8 @@ class PlaceCollection(Database):
         filters = values.get_all_values_from_map('filters_map', user_id)
         if filters.get('vegan') is not None and filters.get('vegan') != "False":
             q['place.vegan'] = True
-        if filters.get('terrace') is not None and filters.get('terrace') != "False":
-            q['place.features'] = {"$in": ["Летняя веранда"]}
+        if filters.get('business') is not None and filters.get('business') != "False":
+            q['place.features'] = {"$in": ["Бизнес-ланч"]}
         if filters.get('hookah') is not None and filters.get('hookah') != "False":
             q['place.features'] = {"$in": ["Кальян-бар"]}
 
@@ -67,6 +67,14 @@ class PlaceCollection(Database):
                 return None
             else:
                 return place.convert_doc_to_place(dict(val))
+
+    def find_places_by_ids(self, list_ids: List[str]) -> List[place.Place]:
+        ids = list(map(ObjectId, list_ids))
+        vals = self.collection.find({"_id": {"$in": ids}})
+        res = []
+        for val in vals:
+            res.append(place.convert_doc_to_place(dict(val)))
+        return res
 
     def update_place(self, p: place.Place):
         logging.info("update: " + str(p))

@@ -33,6 +33,7 @@ class Storage:
 
     def get_list_of_values(self, key: str):
         size = self.size_of_list(key)
+        print(size)
         if size == 0:
             return []
         else:

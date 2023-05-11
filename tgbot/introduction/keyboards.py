@@ -14,7 +14,7 @@ def show_admin_menu(user_id: int):
     return markup
 
 
-def filters(vegan: bool, terrace: bool, hookah: bool):
+def filters(vegan: bool, business: bool, hookah: bool):
     def checker(param: bool):
         if param:
             return "да"
@@ -26,7 +26,7 @@ def filters(vegan: bool, terrace: bool, hookah: bool):
                InlineKeyboardButton('Веганские: ' + checker(vegan), callback_data="vegan"),
                row_width=2)
     markup.add(InlineKeyboardButton('Кухня', callback_data="chose_kitchens"),
-               InlineKeyboardButton('Терраса: ' + checker(terrace), callback_data="terrace"),
+               InlineKeyboardButton('Бизнес-ланч: ' + checker(business), callback_data="business"),
                row_width=2)
     markup.add(InlineKeyboardButton('Средний чек', callback_data="mid_price"),
                InlineKeyboardButton('Кальян: ' + checker(hookah), callback_data="hookah"),
@@ -64,13 +64,12 @@ def show_kitchens(pos: int):
     return markup
 
 
-def main_menu():
+def main_menu(favorites: bool):
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('Найти место', callback_data="find_place"),
-               InlineKeyboardButton('Параметры поиска', callback_data="filters"),
-               InlineKeyboardButton('Избранное', callback_data="favorites"),
-               InlineKeyboardButton('Техническая поддержка', callback_data="support"),
-               row_width=1)
+    markup.add(InlineKeyboardButton('Найти место', callback_data="find_place"), row_width=1)
+    markup.add(InlineKeyboardButton('Параметры поиска', callback_data="filters"), row_width=1)
+    if favorites:
+        markup.add(InlineKeyboardButton('Избранное', callback_data="favorites"), row_width=1)
     return markup
 
 

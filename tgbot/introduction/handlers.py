@@ -54,8 +54,8 @@ def filters_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(filters.set_vegan,
                                         func=lambda c: check_callback_text(c, "vegan"),
                                         pass_bot=True)
-    bot.register_callback_query_handler(filters.set_terrace,
-                                        func=lambda c: check_callback_text(c, "terrace"),
+    bot.register_callback_query_handler(filters.set_business,
+                                        func=lambda c: check_callback_text(c, "business"),
                                         pass_bot=True)
     bot.register_callback_query_handler(filters.set_hookah,
                                         func=lambda c: check_callback_text(c, "hookah"),
