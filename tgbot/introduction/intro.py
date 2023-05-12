@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from telebot.async_telebot import AsyncTeleBot
@@ -88,7 +89,8 @@ async def save_user(user_id: int, chat_id: int, username: Optional[str]) -> User
             username=username,
             city="",
             is_admin=False,
-            favorites=[]
+            favorites=[],
+            last_activity=datetime.now()
         )
         user_collection.add_user(u)
     return u

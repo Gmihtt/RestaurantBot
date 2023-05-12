@@ -225,6 +225,9 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             favorite=favorite
         )
     )
+
+    user_collection.set_last_activity(int(user_id))
+
     message_info = {
         "message_id": message.id,
         "place_id": place_id

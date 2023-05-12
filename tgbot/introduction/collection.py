@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Optional, List
 
 from bson import ObjectId
@@ -53,6 +54,9 @@ class UserCollection(Database):
 
     def set_city(self, user_tg_id: int, city: str):
         return self.collection.update_one({"user_tg_id": user_tg_id}, {"$set": {"city": city}})
+
+    def set_last_activity(self, user_tg_id: int):
+        return self.collection.update_one({"user_tg_id": user_tg_id}, {"$set": {"last_activity": datetime.now()}})
 
     def add_admin(self, username: str) -> Optional[str]:
         return self.collection.update_one({"username": username}, {"$set": {"is_admin": True}})
