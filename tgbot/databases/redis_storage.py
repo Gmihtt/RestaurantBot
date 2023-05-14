@@ -5,9 +5,6 @@ import redis
 class Storage:
     def __init__(self) -> None:
         self.r = redis.StrictRedis(host="localhost", port=6379, password="", decode_responses=True)
-        keys = self.r.keys('*')
-        if keys:
-            self.r.delete(*keys)
 
     def clean_redis(self):
         keys = self.r.keys('*')
