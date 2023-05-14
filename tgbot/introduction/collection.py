@@ -21,10 +21,7 @@ class UserCollection(Database):
 
     def get_all_users(self) -> List[user.User]:
         users = self.collection.find({})
-        res = []
-        for u in users:
-            res.append(user.convert_doc_to_user(u))
-        return res
+        return list(map(user.convert_doc_to_user, users))
 
     def get_user_by_id(self, _id: str) -> Optional[user.User]:
         val = self.collection.find_one({"_id": ObjectId(_id)})
@@ -66,7 +63,14 @@ class UserCollection(Database):
 
     def is_admin(self, user_id: int):
         u = self.collection.find_one({"user_tg_id": user_id})
-        return u.get('is_admin')
+        return u.get('is_admin') is not None
+
+    def users_stat(self, time: datetime) -> int:
+        users = self.collection.find({'last_activity': {"$gte": time}})
+        return len(list(users))
+
+    def users_count(self):
+        return self.collection.count_documents({})
 
 
 user_collection = UserCollection()

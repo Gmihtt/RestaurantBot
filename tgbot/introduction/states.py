@@ -11,3 +11,4 @@ class IntroStates(StrEnum):
     MidPrice = "mid_price"
     Rating = "rating"
     Help = "help"
+    Statistics = "statistics"

@@ -1,7 +1,7 @@
 from telebot.async_telebot import AsyncTeleBot
 
 from tgbot.filters import check_callback_text, check_state
-from tgbot.introduction import intro
+from tgbot.introduction import intro, statistics
 from tgbot.introduction import filters
 from tgbot.introduction.states import IntroStates
 
@@ -26,6 +26,12 @@ def menu_handlers(bot: AsyncTeleBot):
                                         pass_bot=True)
     bot.register_callback_query_handler(intro.place_preview,
                                         func=lambda c: check_callback_text(c, "find_place"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(statistics.show_statistics,
+                                        func=lambda c: check_callback_text(c, "statistics"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(statistics.show_stat,
+                                        func=lambda c: check_state(c, IntroStates.Statistics),
                                         pass_bot=True)
 
 

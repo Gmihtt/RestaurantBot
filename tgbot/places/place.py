@@ -84,11 +84,7 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
 
 def convert_place_to_doc(p: Place) -> Dict[str, Any]:
     d = dict(p)
-    print(d)
     d['_id'] = str(p['_id'])
-    print(d['_id'])
     d['place_type'] = p.get('place_type').value
-    print(d['place_type'])
     d['files'] = list(map(convert_file_to_dict, p['files']))
-    print(d['files'])
     return d

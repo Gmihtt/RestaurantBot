@@ -9,7 +9,6 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
     if rest.get('kitchens') is not None:
         kitchens = rest['kitchens']
         kitchen = "кухни: "
-        print(kitchens)
         for k in kitchens:
             kitchen += k + ' '
         kitchen += '\n'
@@ -28,7 +27,6 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
 
 
 def pretty_show_place(place: Place) -> str:
-    print(place)
     name = "Название: " + place['name'] + '\n'
     place_str = ""
     place_type = ""

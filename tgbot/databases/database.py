@@ -30,11 +30,9 @@ class DatabaseOld:
 
     def find_post_by_id(self, post_id: str) -> Optional[post.Post]:
         val = self.posts.find_one({"_id": ObjectId(post_id)})
-        print(val)
         if val is None:
             return None
         else:
-            print(val)
             return post.convert_doc_to_post(dict(val))
 
     def update_post(self, p: post.Post):

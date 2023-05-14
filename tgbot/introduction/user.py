@@ -27,7 +27,6 @@ def convert_doc_to_user(d: Dict[str, Any]) -> User:
 
 
 def convert_user_to_doc(u: User) -> Dict[str, Any]:
-    print(u)
     d = dict(u)
     d.pop('_id')
     d['last_activity'] = u['last_activity']

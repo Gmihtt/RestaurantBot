@@ -176,7 +176,6 @@ async def filter_rating(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def msg_drop_filters(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.delete_message(call.message.chat.id, call.message.id)
-    print("hello")
     user_id = str(call.from_user.id)
     state = states.get_state(user_id)
     values.set_value('last_state', str(state), user_id)

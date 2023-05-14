@@ -12,7 +12,6 @@ from tgbot.utils import states, values
 from tgbot.config import main_admins
 from tgbot.introduction import keyboards
 from tgbot.introduction.states import IntroStates
-from tgbot import common_keyboards
 
 
 async def check_welcome(message: Message, bot: AsyncTeleBot):
@@ -21,7 +20,7 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
     if user_id in main_admins: #or user_collection.is_admin(user_id):
         await bot.reply_to(message, """
 Выберете интерфейс
-""", reply_markup=common_keyboards.show_admins_chose_buttons())
+""", reply_markup=keyboards.show_admins_chose_buttons())
     else:
         await send_welcome(message, bot)
 
@@ -81,7 +80,6 @@ async def welcome(
 async def save_user(user_id: int, chat_id: int, username: Optional[str]) -> User:
     u = user_collection.get_user_by_tg_id(user_id)
     if u is None:
-        print("save user")
         u = user.User(
             _id=None,
             user_tg_id=user_id,

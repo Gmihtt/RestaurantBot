@@ -141,8 +141,6 @@ async def place_description_msg(call: CallbackQuery, bot: AsyncTeleBot):
 def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Optional[Place]:
     place_map = values.get_all_values_from_map(user_id)
     place = place_collection.find_place_by_id(place_map['_id'])
-    print(place)
-    print(place_map)
     if place is None:
         return None
 
@@ -165,7 +163,6 @@ async def place_approve(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
     states.set_state(PlaceStates.Approve, user_id)
     files = values.get_files(user_id)
-    print(files)
     place = get_place_from_storage(data=message.text,
                                    user_id=user_id,
                                    files=files)

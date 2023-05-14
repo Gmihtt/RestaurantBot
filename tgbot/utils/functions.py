@@ -53,7 +53,6 @@ async def send_files(text: str,
 async def parse_file(message: Message, bot: AsyncTeleBot, suffix: str):
     user_id = str(message.from_user.id)
     type_of_file = message.content_type
-    print(type_of_file)
     if message.content_type == "photo":
         file_tg = message.photo[0]
     elif message.content_type == "video":

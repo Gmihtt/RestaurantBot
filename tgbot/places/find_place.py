@@ -106,9 +106,7 @@ async def delete_place_message(call: CallbackQuery, bot: AsyncTeleBot):
     d = values.get_all_values_from_map('place_map', user_id)
 
     file_ids = values.get_list('file_ids', user_id)
-    print(file_ids)
     for file_id in file_ids:
-        print(file_id)
         await functions.delete_message(call.message.chat.id, int(file_id), bot)
     values.delete_list('file_ids', user_id)
 
@@ -315,7 +313,6 @@ async def favorite_change(call: CallbackQuery, bot: AsyncTeleBot):
         place_id = call.data[len("favorite_add"):]
         places_ids = user['favorites']
         places_ids.append(place_id)
-        print(places_ids)
         user_collection.update_favorites(user_id, places_ids)
         await delete_place_message(call, bot)
         call.data = "place_id" + place_id

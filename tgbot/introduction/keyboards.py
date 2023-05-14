@@ -10,7 +10,7 @@ def show_admin_menu(user_id: int):
     if user_id in main_admins:
         markup.add(InlineKeyboardButton('Админы', callback_data="admin"))
         markup.add(InlineKeyboardButton('Статистика', callback_data="statistics"))
-    markup.add(InlineKeyboardButton('Пользовательское меню', callback_data="user"))
+    markup.add(InlineKeyboardButton('Пользовательское меню', callback_data="just_user"))
     return markup
 
 
@@ -42,14 +42,12 @@ def show_kitchens(pos: int):
     markup = InlineKeyboardMarkup()
     line = []
     list_kitchens = list(kitchens)[pos:pos + 10]
-    print(list_kitchens)
     for kitchen in list_kitchens:
         line.append(InlineKeyboardButton(kitchen, callback_data="name" + kitchen))
         if len(line) == 2:
             markup.add(*line, row_width=2)
             line = []
     if len(line) != 0:
-        print(line)
         markup.add(*line, row_width=len(line))
     if 0 < pos < len(kitchens) - 10:
         markup.add(InlineKeyboardButton('⬅️', callback_data="back"),
@@ -119,5 +117,31 @@ def drop_filters():
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Да', callback_data="drop_yes"),
                InlineKeyboardButton('Нет', callback_data="drop_no"),
+               row_width=1)
+    return markup
+
+
+def statistics():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Количество юзеров', callback_data="stat_all"),
+               InlineKeyboardButton('Количество за день', callback_data="stat_day"),
+               InlineKeyboardButton('Количество за неделю', callback_data="stat_week"),
+               InlineKeyboardButton('Количество за месяц', callback_data="stat_month"),
+               row_width=1)
+    markup.add(InlineKeyboardButton('Вернуть в меню', callback_data="admin_user"))
+    return markup
+
+
+def button_admin_menu():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Вернуться в меню', callback_data="admin_user"),
+               row_width=1)
+    return markup
+
+
+def show_admins_chose_buttons():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Интерфейс админа', callback_data="admin_user"),
+               InlineKeyboardButton('Интерфейс пользователя', callback_data="just_user"),
                row_width=1)
     return markup
