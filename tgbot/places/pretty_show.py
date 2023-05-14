@@ -21,8 +21,6 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
     terrace = ""
     if "Летняя веранда" in rest['features']:
         terrace = "терраса: есть" + '\n'
-    else:
-        vegan = "веганска еда: нет" + '\n'
     return mid_price + kitchen + vegan + business + terrace
 
 
