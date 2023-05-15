@@ -10,7 +10,7 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
         kitchens = rest['kitchens']
         kitchen = "кухни: "
         for k in kitchens:
-            kitchen += k + ''
+            kitchen += k + ' '
         kitchen += '\n\n'
     vegan = ""
     if rest['vegan']:
