@@ -10,8 +10,8 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
         kitchens = rest['kitchens']
         kitchen = "кухни: "
         for k in kitchens:
-            kitchen += k + ' '
-        kitchen += '\n'
+            kitchen += k + ''
+        kitchen += '\n\n'
     vegan = ""
     if rest['vegan']:
         vegan = 'веганская еда: есть' + '\n'
@@ -25,11 +25,9 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
 
 
 def pretty_show_place(place: Place) -> str:
-    name = "Название: " + place['name'] + '\n'
+    name = "Название: " + place['name'] + '\n\n'
     place_str = ""
-    place_type = ""
     if place['place_type'] == PlaceType.Restaurant:
-        place_type = "Ресторан" + '\n'
         if place.get('place') is not None:
             place_str = pretty_show_restaurant(place['place']) + '\n'
     address = "Адрес: " + place['address'] + '\n'
@@ -42,7 +40,6 @@ def pretty_show_place(place: Place) -> str:
     if place.get('description') is not None:
         description = place['description'] + '\n'
     return (name +
-            place_type +
             place_str +
             address +
             work_interval +
