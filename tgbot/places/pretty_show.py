@@ -9,8 +9,9 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
     if rest.get('kitchens') is not None:
         kitchens = rest['kitchens']
         kitchen = "кухни: "
-        for k in kitchens:
-            kitchen += k + ' '
+        for k in kitchens[0:5]:
+            if k not in ["вегетарианская", "веганская"]:
+                kitchen += k + ''
         kitchen += '\n\n'
     vegan = ""
     if rest['vegan']:

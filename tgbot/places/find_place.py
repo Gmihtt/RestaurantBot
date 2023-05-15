@@ -180,8 +180,8 @@ async def show_places(
         city = places[0]['city']
         user_collection.set_city(int(user_id), city)
 
-    text = f"""Я нашел {count} заведения вокруг твоей точки!\n
-Выбирай понравившееся заведение и нажимай на кнопку с его название, чтобы получить более подробную информацию о нем."""
+    text = f"""Я нашел {count} заведений вокруг твоей точки!\n
+Выбирай понравившееся заведение и нажимай на кнопку с его названием"""
     text_filters = await show_filters(user_id)
     text += text_filters
     await bot.send_message(
