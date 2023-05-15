@@ -124,6 +124,7 @@ def drop_filters():
 def statistics():
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Количество юзеров', callback_data="stat_all"),
+               InlineKeyboardButton('Количество за день', callback_data="stat_hour"),
                InlineKeyboardButton('Количество за день', callback_data="stat_day"),
                InlineKeyboardButton('Количество за неделю', callback_data="stat_week"),
                InlineKeyboardButton('Количество за месяц', callback_data="stat_month"),

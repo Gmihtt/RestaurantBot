@@ -29,6 +29,9 @@ async def show_stat(call: CallbackQuery, bot: AsyncTeleBot):
     if data == "stat_all":
         user_count = user_collection.users_count()
         period = "за все время"
+    if data == "stat_hour":
+        user_count = user_collection.users_stat(cur_date-timedelta(hours=1))
+        period = "за последний час"
     if data == "stat_day":
         user_count = user_collection.users_stat(cur_date-timedelta(days=1))
         period = "за весь день"
