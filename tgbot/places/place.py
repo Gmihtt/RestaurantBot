@@ -6,8 +6,8 @@ from tgbot.common_types import File, convert_file_to_dict, convert_dict_to_file
 
 
 class Coordinates(TypedDict):
-    first: float
-    second: float
+    longitude: float
+    latitude: float
 
 
 class PlaceType(StrEnum):
@@ -18,7 +18,9 @@ class Restaurant(TypedDict):
     mid_price: Optional[int]
     business_lunch: bool
     business_lunch_price: Optional[int]
-    kitchen: str
+    kitchens: List[str]
+    features: List[str]
+    rating: Optional[float]
     vegan: bool
 
 
@@ -36,6 +38,7 @@ class Place(TypedDict):
     files: List[File]
     place_type: Optional[PlaceType]
     place: Union[Restaurant, None]
+    yandex_id: Optional[str]
 
 
 def convert_doc_to_place(d: Dict[str, Any]) -> Place:
@@ -45,8 +48,8 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         "city": d['city'],
         "address": d['address'],
         "coordinates": {
-            "first": d['coordinates']['first'],
-            "second": d['coordinates']['second'],
+            "longitude": d['coordinates']['longitude'],
+            "latitude": d['coordinates']['latitude'],
         },
         "files": list(map(convert_dict_to_file, d['files'])),
         "phone": d.get('phone'),
@@ -54,6 +57,7 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         "work_interval": d.get('work_interval'),
         "description": d.get('description'),
         "last_modify_id": d.get('last_modify_id'),
+        "yandex_id": d.get('yandex_id')
     }
     if d.get('place_type') is not None:
         place_type = PlaceType(d['place_type'])
@@ -62,10 +66,12 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
             if place_type == PlaceType.Restaurant:
                 restaurant = Restaurant(
                     mid_price=d['place'].get('mid_price'),
-                    business_lunch=d['place']['business_lunch'],
+                    business_lunch=d['place'].get('business_lunch'),
                     business_lunch_price=d['place'].get('business_lunch_price'),
-                    kitchen=d['place']['kitchen'],
-                    vegan=d['place']['vegan']
+                    kitchens=d['place']['kitchens'],
+                    rating=d['place'].get('rating'),
+                    vegan=d['place'].get('vegan'),
+                    features=d['place']['features'],
                 )
                 place['place'] = restaurant
         else:
@@ -78,11 +84,7 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
 
 def convert_place_to_doc(p: Place) -> Dict[str, Any]:
     d = dict(p)
-    print(d)
     d['_id'] = str(p['_id'])
-    print(d['_id'])
     d['place_type'] = p.get('place_type').value
-    print(d['place_type'])
     d['files'] = list(map(convert_file_to_dict, p['files']))
-    print(d['files'])
     return d

@@ -1,5 +1,6 @@
 from typing import List
 
+import mpu
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InputMediaPhoto, InputMediaVideo, Message
 
@@ -7,6 +8,7 @@ from tgbot import common_keyboards
 from tgbot.common_types import File, FileTypes
 from tgbot.config import main_admins
 from tgbot.databases.database import db
+from tgbot.places.place import Coordinates
 from tgbot.utils import values
 
 
@@ -51,7 +53,6 @@ async def send_files(text: str,
 async def parse_file(message: Message, bot: AsyncTeleBot, suffix: str):
     user_id = str(message.from_user.id)
     type_of_file = message.content_type
-    print(type_of_file)
     if message.content_type == "photo":
         file_tg = message.photo[0]
     elif message.content_type == "video":
@@ -72,3 +73,17 @@ async def parse_file(message: Message, bot: AsyncTeleBot, suffix: str):
     await bot.send_message(chat_id=message.chat.id,
                            text="""Хотите ли вы добавить еще фото или видео?""",
                            reply_markup=common_keyboards.show_file(suffix))
+
+
+def count_distance(crds1: Coordinates, crds2: Coordinates):
+    return mpu.haversine_distance(
+        (crds1['latitude'], crds1['longitude']),
+        (crds2['latitude'], crds2['longitude'])
+    )
+
+
+async def delete_message(chat_id: int, msg_id: int, bot: AsyncTeleBot):
+    try:
+        await bot.delete_message(chat_id, msg_id)
+    except Exception:
+        return

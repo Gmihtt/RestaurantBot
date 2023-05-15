@@ -105,7 +105,7 @@ async def place_restaurant_parse(message: Message, bot: AsyncTeleBot):
     values.add_values_to_map(restaurant_info, user_id)
     await bot.send_message(chat_id=message.chat.id,
                            text="""Добавьте кухню""",
-                           reply_markup=keyboards.show_all_kitchens())
+                           reply_markup=common_keyboards.show_all_kitchens())
 
 
 async def add_kitchen(call: CallbackQuery, bot: AsyncTeleBot):
@@ -141,8 +141,6 @@ async def place_description_msg(call: CallbackQuery, bot: AsyncTeleBot):
 def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Optional[Place]:
     place_map = values.get_all_values_from_map(user_id)
     place = place_collection.find_place_by_id(place_map['_id'])
-    print(place)
-    print(place_map)
     if place is None:
         return None
 
@@ -150,8 +148,9 @@ def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Option
         restaurant = Restaurant(
             mid_price=None if place_map['mid_price'] == "нет" else place_map['mid_price'],
             business_lunch=place_map['business_lunch'] == "да",
-            business_lunch_price=None if place_map['business_lunch_price'] == "нет" else place_map['business_lunch_price'],
-            kitchen=place_map['kitchen'],
+            business_lunch_price=
+            None if place_map['business_lunch_price'] == "нет" else place_map['business_lunch_price'],
+            kitchens=[place_map['kitchens']],
             vegan=place_map['vegan'] == "да",
         )
         place['place'] = restaurant
@@ -164,7 +163,6 @@ async def place_approve(message: Message, bot: AsyncTeleBot):
     user_id = str(message.from_user.id)
     states.set_state(PlaceStates.Approve, user_id)
     files = values.get_files(user_id)
-    print(files)
     place = get_place_from_storage(data=message.text,
                                    user_id=user_id,
                                    files=files)

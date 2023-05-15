@@ -5,9 +5,6 @@ import redis
 class Storage:
     def __init__(self) -> None:
         self.r = redis.StrictRedis(host="localhost", port=6379, password="", decode_responses=True)
-        keys = self.r.keys('*')
-        if keys:
-            self.r.delete(*keys)
 
     def clean_redis(self):
         keys = self.r.keys('*')
@@ -19,6 +16,11 @@ class Storage:
 
     def get_value(self, key: str) -> Optional[str]:
         return self.r.get(key)
+
+    def delete_value(self, key: str):
+        keys = [key]
+        if keys:
+            return self.r.delete(*keys)
 
     def add_value_to_list(self, key: str, value: str):
         self.r.lpush(key, value)
@@ -40,16 +42,21 @@ class Storage:
     def add_values_to_map(self, name: str, vals: Dict[str, str]):
         self.r.hset(name=name, mapping=vals)
 
+    def get_value_from_map(self, name: str, key: str):
+        return self.r.hget(name, key)
+
+    def delete_value_from_map(self, name, key):
+        keys = [key]
+        if keys:
+            self.r.hdel(name, *keys)
+
     def get_map(self, name):
         return self.r.hgetall(name=name)
 
     def clean_map(self, name):
         keys = self.r.hkeys(name)
-        self.r.hdel(name, *keys)
-
-    def delete_val_from_map(self, name, key):
-        keys = [key]
-        self.r.hdel(name, *keys)
+        if keys:
+            self.r.hdel(name, *keys)
 
 
 storage = Storage()

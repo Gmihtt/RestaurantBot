@@ -33,7 +33,9 @@ username = "dAKB4phxFx"
 password = "EIamC1W3jw"
 bucket = "gmihtt-tgbot"
 main_admins = {381873540, 138769502}
+photos_path = "photos"
+max_distance = 5
 
-cities = get_cities()
-kitchens = get_kitchens()
-places_types = get_places_types()
+cities = sorted(get_cities())
+kitchens = sorted(get_kitchens())
+places_types = sorted(get_places_types())

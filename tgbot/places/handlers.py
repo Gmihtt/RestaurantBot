@@ -48,6 +48,9 @@ def find_place_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(find_place.show_cur,
                                         func=lambda c: check_callback_text(c, "places_cur"),
                                         pass_bot=True)
+    bot.register_callback_query_handler(find_place.show_drop_filters,
+                                        func=lambda c: check_callback_text(c, "without_filters"),
+                                        pass_bot=True)
     bot.register_callback_query_handler(find_place.show_back,
                                         func=lambda c: check_callback_text(c, "places_back"),
                                         pass_bot=True)
@@ -59,4 +62,26 @@ def find_place_handlers(bot: AsyncTeleBot):
                                         pass_bot=True)
     bot.register_callback_query_handler(find_place.send_location,
                                         func=lambda c: find_callback_text(c, "place_position"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.send_phone,
+                                        func=lambda c: find_callback_text(c, "place_phone"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.send_site,
+                                        func=lambda c: find_callback_text(c, "place_site"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.show_favorite_places,
+                                        func=
+                                        lambda c: find_callback_text(c, "favorites"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.show_favorite_places,
+                                        func=lambda c: check_state(c, PlaceStates.FavoritePlaces),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.favorite_change,
+                                        func=lambda c: find_callback_text(c, "favorite_delete"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.favorite_change,
+                                        func=lambda c: find_callback_text(c, "favorite_add"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(find_place.favorite_change,
+                                        func=lambda c: check_state(c, PlaceStates.FavoriteDelete),
                                         pass_bot=True)

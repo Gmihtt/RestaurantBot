@@ -5,7 +5,6 @@ from tgbot.utils import states
 
 
 def check_callback_text(call: CallbackQuery, text: str):
-    print(call.data, text)
     return call.data == text
 
 

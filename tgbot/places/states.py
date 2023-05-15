@@ -11,3 +11,5 @@ class PlaceStates(StrEnum):
     Push = "push"
     ShowPlaces = "show_places"
     ShowPlace = "show_place"
+    FavoritePlaces = "favorite_places"
+    FavoriteDelete = "favorite_delete"
