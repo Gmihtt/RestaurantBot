@@ -6,8 +6,9 @@ from telebot.types import InputMediaPhoto, InputMediaVideo, Message
 
 from tgbot import common_keyboards
 from tgbot.common_types import File, FileTypes
-from tgbot.config import main_admins
+from tgbot.config import main_admins, max_distance
 from tgbot.databases.database import db
+from tgbot.places.collection import place_collection
 from tgbot.places.place import Coordinates
 from tgbot.utils import values
 
@@ -80,6 +81,15 @@ def count_distance(crds1: Coordinates, crds2: Coordinates):
         (crds1['latitude'], crds1['longitude']),
         (crds2['latitude'], crds2['longitude'])
     )
+
+
+def count_relevant_places(user_id: str, crds: Coordinates):
+    places = place_collection.find_close_place(crds, user_id, skip=0, limit=0)
+    count = 0
+    for place in places:
+        if count_distance(crds, place['coordinates']) <= max_distance:
+            count += 1
+    return count
 
 
 async def delete_message(chat_id: int, msg_id: int, bot: AsyncTeleBot):

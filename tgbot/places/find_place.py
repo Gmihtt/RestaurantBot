@@ -30,12 +30,8 @@ async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
         longitude=longitude,
         latitude=latitude
     )
-    places = place_collection.find_close_place(crds, user_id, skip=0, limit=0)
 
-    count = 0
-    for place in places:
-        if count_distance(crds, place['coordinates']) <= max_distance:
-            count += 1
+    count = functions.count_relevant_places(user_id, crds)
 
     position = {
         "skip": '0',

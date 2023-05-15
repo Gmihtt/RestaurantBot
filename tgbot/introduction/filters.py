@@ -2,7 +2,8 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
 from tgbot.places.find_place import show_places
-from tgbot.utils import states, values
+from tgbot.places.place import Coordinates
+from tgbot.utils import states, values, functions
 from tgbot.introduction import keyboards
 from tgbot.introduction.states import IntroStates
 
@@ -202,6 +203,17 @@ async def return_from_drop(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
     state = values.get_value('last_state', user_id)
     if state == "show_places":
+        position = values.get_all_values_from_map('place_map', user_id)
+        loc = position.get('location')
+        if loc is not None:
+            new_loc = loc.split(",")
+            crds = Coordinates(
+                longitude=float(new_loc[0]),
+                latitude=float(new_loc[1])
+            )
+            count = functions.count_relevant_places(user_id, crds)
+            values.add_values_to_map('place_map', {'count': str(count)}, user_id)
+
         await show_places(
             call.message.chat.id,
             str(call.from_user.id),
