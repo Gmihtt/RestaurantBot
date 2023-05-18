@@ -38,12 +38,14 @@ class PlaceCollection(Database):
 
         if filters.get('mid_price') is not None:
             if int(filters['mid_price']) <= 5000:
-                q['mid_price'] = {"$lte": int(filters['mid_price'])}
+                print(filters['mid_price'])
+                q['place.mid_price'] = {"$lte": int(filters['mid_price'])}
             else:
-                q['mid_price'] = {"$gte": int(filters['mid_price'])}
+                q['place.mid_price'] = {"$gte": int(filters['mid_price'])}
+        print(q)
 
-        if filters.get('raring') is not None:
-            q['raring'] = {"$gte": float(filters['raring'])}
+        if filters.get('rating') is not None:
+            q['place.rating'] = {"$gte": float(filters['rating'])}
 
         res_q = self.collection.find(q, skip=skip, limit=limit, )
         res = []

@@ -9,7 +9,7 @@ from tgbot.introduction.states import IntroStates
 
 
 async def set_filters(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
     states.set_state(IntroStates.Filters, user_id)
     text = "Выбери нужные параметры для заведения, которое ты хочешь посетить."
@@ -53,7 +53,7 @@ async def set_filters(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def filter_kitchens(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
     states.set_state(IntroStates.Kitchens, str(user_id))
     data = call.data
@@ -123,7 +123,7 @@ async def set_value(name: str, call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def filter_mid_price(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
     states.set_state(IntroStates.MidPrice, str(user_id))
     data = call.data
@@ -151,7 +151,7 @@ async def filter_mid_price(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def filter_rating(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
     states.set_state(IntroStates.Rating, str(user_id))
     data = call.data
@@ -176,7 +176,7 @@ async def filter_rating(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def msg_drop_filters(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
     state = states.get_state(user_id)
     values.set_value('last_state', str(state), user_id)

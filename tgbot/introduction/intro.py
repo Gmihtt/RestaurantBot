@@ -8,7 +8,7 @@ from tgbot.introduction import user
 from tgbot.introduction.collection import user_collection
 from tgbot.introduction.user import User
 from tgbot.photos import save_photos
-from tgbot.utils import states, values
+from tgbot.utils import states, values, functions
 from tgbot.config import main_admins
 from tgbot.introduction import keyboards
 from tgbot.introduction.states import IntroStates
@@ -50,7 +50,7 @@ async def send_welcome(message: Message, bot: AsyncTeleBot):
 
 
 async def send_welcome_callback(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     await welcome(
         user_id=call.from_user.id,
         chat_id=call.message.chat.id,
@@ -96,7 +96,7 @@ async def save_user(user_id: int, chat_id: int, username: Optional[str]) -> User
 
 async def show_admin_menu(call: CallbackQuery, bot: AsyncTeleBot):
     await save_photos(bot)
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = call.from_user.id
     states.set_state(IntroStates.AdminMenu, str(user_id))
     await bot.send_message(
@@ -107,7 +107,7 @@ async def show_admin_menu(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def place_preview(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
     text = """Чтобы подобрать для Вас рестораны, мне нужно точка, вокруг которой я буду искать заведения.\n
 Вы можете прислать отдельную точку, либо нажать кнопку ниже, чтобы рестораны сразу возле тебя."""
