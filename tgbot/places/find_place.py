@@ -211,7 +211,7 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
 
     message = await bot.send_message(
         chat_id=call.message.chat.id,
-        text=pretty_show_place(place),
+        text=pretty_show_place(place, None),
         reply_markup=keyboards.show_place(
             place_id=place_id,
             phone=place['phone'] is not None,
