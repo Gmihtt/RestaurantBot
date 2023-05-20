@@ -209,9 +209,18 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
 
     favorite = place_id in user['favorites']
 
+    position = values.get_all_values_from_map('place_map', user_id)
+    loc = position['location']
+    new_loc = loc.split(",")
+    crds1 = Coordinates(
+        longitude=float(new_loc[0]),
+        latitude=float(new_loc[1])
+    )
+    distance = count_distance(crds1, place['coordinates'])
+
     message = await bot.send_message(
         chat_id=call.message.chat.id,
-        text=pretty_show_place(place, None),
+        text=pretty_show_place(place, distance),
         reply_markup=keyboards.show_place(
             place_id=place_id,
             phone=place['phone'] is not None,

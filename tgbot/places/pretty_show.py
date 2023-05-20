@@ -14,7 +14,7 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
     kitchen = ""
     if rest.get('kitchens') is not None:
         kitchens = rest['kitchens']
-        kitchen = "кухни: <i>"
+        kitchen = "Кухни: <i>"
         for i, k in enumerate(kitchens[0:5]):
             if k not in ["вегетарианская", "веганская"]:
                 if i == 4:
@@ -47,12 +47,12 @@ def pretty_show_place(place: Place, distance: Optional[float]) -> str:
 
     dist = ""
     if distance is not None:
-        dist = "Расстояние до места: <i>" + str(distance) + " км.</i>\n"
+        dist = "Расстояние до места: <i>" + str(round(distance, 1)) + " км.</i>\n"
 
     place_str = ""
     if place['place_type'] == PlaceType.Restaurant:
         if place.get('place') is not None:
-            place_str = pretty_show_restaurant(place['place']) + '\n'
+            place_str = pretty_show_restaurant(place['place']) + '\n\n'
 
     place_adr = place['address'].split(',')[1:]
     address = "Адрес: <i>"
@@ -67,7 +67,7 @@ def pretty_show_place(place: Place, distance: Optional[float]) -> str:
     if place.get('work_interval') is not None:
         work_interval = "Время работы: <i>\n"
         for work_int in place['work_interval'].split(';'):
-            work_interval += "      " + work_int.strip() + "\n"
+            work_interval += work_int.strip() + "\n"
         work_interval += '</i>'
 
     description = ""
