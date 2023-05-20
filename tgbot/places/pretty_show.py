@@ -17,7 +17,7 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
         kitchen = "Кухни: <i>"
         for i, k in enumerate(kitchens[0:5]):
             if k not in ["вегетарианская", "веганская"]:
-                if i == 4:
+                if i == len(kitchens[0:5]) - 1:
                     kitchen += k
                 else:
                     kitchen += k + ', '
