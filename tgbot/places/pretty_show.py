@@ -12,7 +12,7 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
     if rest.get('mid_price') is not None:
         mid_price = 'Cредний чек: <i>' + str(int(rest['mid_price'])) + ' руб.</i>\n'
     kitchen = ""
-    if rest.get('kitchens') is not None:
+    if rest.get('kitchens') is not None and rest.get('kitchens') != []:
         kitchens = rest['kitchens']
         kitchen = "Кухни: <i>"
         for i, k in enumerate(kitchens[0:5]):
