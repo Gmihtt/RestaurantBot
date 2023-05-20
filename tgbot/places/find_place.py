@@ -217,7 +217,8 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             phone=place['phone'] is not None,
             site=place['url'] is not None,
             favorite=favorite
-        )
+        ),
+        parse_mode="html"
     )
 
     user_collection.set_last_activity(int(user_id))
