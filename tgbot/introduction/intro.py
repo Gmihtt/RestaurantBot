@@ -79,6 +79,7 @@ async def welcome(
         username=username,
         code=code
     )
+    await functions.delete_old_msg(chat_id, bot)
     await bot.send_message(
         chat_id=chat_id,
         text=intro_text,
@@ -129,9 +130,11 @@ async def place_preview(call: CallbackQuery, bot: AsyncTeleBot):
         text="Пришлите местоположение",
         reply_markup=keyboards.find_place()
     )
+    chat_id = call.message.chat.id
+    values.set_value('msg_id_delete', str(message.id), str(chat_id))
     values.set_value('loc_msg', str(message.id), user_id)
     await bot.send_message(
-        chat_id=call.message.chat.id,
+        chat_id=chat_id,
         text=text,
         reply_markup=keyboards.back_main_menu()
     )

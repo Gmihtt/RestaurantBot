@@ -16,6 +16,8 @@ from tgbot.config import max_distance
 
 
 async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
+    await functions.delete_old_msg(message.chat.id, bot)
+
     user_id = str(message.from_user.id)
 
     message_id = values.get_value('loc_msg', user_id)

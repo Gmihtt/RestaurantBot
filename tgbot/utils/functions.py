@@ -97,3 +97,10 @@ async def delete_message(chat_id: int, msg_id: int, bot: AsyncTeleBot):
         await bot.delete_message(chat_id, msg_id)
     except Exception:
         return
+
+
+async def delete_old_msg(chat_id: int, bot: AsyncTeleBot):
+    m_id = values.get_value('msg_id_delete', str(chat_id))
+    if m_id is not None:
+        await delete_message(chat_id, int(m_id), bot)
+        values.delete_value('msg_id_delete', str(chat_id))
