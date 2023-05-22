@@ -12,3 +12,4 @@ class IntroStates(StrEnum):
     Rating = "rating"
     Help = "help"
     Statistics = "statistics"
+    DeepLink = "deeplink"
