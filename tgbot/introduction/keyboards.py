@@ -1,3 +1,5 @@
+from typing import List
+
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 from tgbot.config import main_admins, kitchens
@@ -128,6 +130,7 @@ def statistics():
                InlineKeyboardButton('Количество за день', callback_data="stat_day"),
                InlineKeyboardButton('Количество за неделю', callback_data="stat_week"),
                InlineKeyboardButton('Количество за месяц', callback_data="stat_month"),
+               InlineKeyboardButton('deeplink', callback_data="deeplink"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуть в меню', callback_data="admin_user"))
     return markup
@@ -145,4 +148,27 @@ def show_admins_chose_buttons():
     markup.add(InlineKeyboardButton('Интерфейс админа', callback_data="admin_user"),
                InlineKeyboardButton('Интерфейс пользователя', callback_data="just_user"),
                row_width=1)
+    return markup
+
+
+def show_deeplink_stat(deeplinks: List[str], pos: int):
+    markup = InlineKeyboardMarkup()
+    line = []
+    deeplinks = deeplinks[pos:pos + 10]
+    for deeplink in deeplinks:
+        line.append(InlineKeyboardButton(deeplink, callback_data="code" + deeplink))
+        if len(line) == 2:
+            markup.add(*line, row_width=2)
+            line = []
+    if len(line) != 0:
+        markup.add(*line, row_width=len(line))
+    if 0 < pos < len(kitchens) - 10:
+        markup.add(InlineKeyboardButton('⬅️', callback_data="back"),
+                   InlineKeyboardButton('➡️', callback_data="next"),
+                   row_width=2)
+    elif pos <= 0:
+        markup.add(InlineKeyboardButton('➡️', callback_data="next"), row_width=1)
+    else:
+        markup.add(InlineKeyboardButton('⬅️', callback_data="back"), row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться к статистикам', callback_data="statistics"))
     return markup

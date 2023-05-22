@@ -30,9 +30,16 @@ def menu_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(statistics.show_statistics,
                                         func=lambda c: check_callback_text(c, "statistics"),
                                         pass_bot=True)
+    bot.register_callback_query_handler(statistics.deeplink,
+                                        func=lambda c: check_callback_text(c, "deeplink"),
+                                        pass_bot=True)
     bot.register_callback_query_handler(statistics.show_stat,
                                         func=lambda c: check_state(c, IntroStates.Statistics),
                                         pass_bot=True)
+    bot.register_callback_query_handler(statistics.deeplink,
+                                        func=lambda c: check_state(c, IntroStates.DeepLink),
+                                        pass_bot=True
+                                        )
 
 
 def filters_handlers(bot: AsyncTeleBot):

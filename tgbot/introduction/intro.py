@@ -5,13 +5,17 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message, CallbackQuery
 
 from tgbot.introduction import user
-from tgbot.introduction.collection import user_collection
+from tgbot.introduction.collection import user_collection, stat_collection
 from tgbot.introduction.user import User
 from tgbot.photos import save_photos
 from tgbot.utils import states, values, functions
 from tgbot.config import main_admins
 from tgbot.introduction import keyboards
 from tgbot.introduction.states import IntroStates
+
+
+def extract_unique_code(text: str) -> Optional[str]:
+    return text.split()[1] if len(text.split()) > 1 else None
 
 
 async def check_welcome(message: Message, bot: AsyncTeleBot):
@@ -22,7 +26,9 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
 Выберете интерфейс
 """, reply_markup=keyboards.show_admins_chose_buttons())
     else:
-        await send_welcome(message, bot)
+        code = extract_unique_code(message.text)
+        print(code)
+        await send_welcome(message, bot, code)
 
 
 intro_text = """
@@ -41,12 +47,13 @@ intro_text = """
 """
 
 
-async def send_welcome(message: Message, bot: AsyncTeleBot):
+async def send_welcome(message: Message, bot: AsyncTeleBot, code: Optional[str] = None):
     await welcome(
         user_id=message.from_user.id,
         chat_id=message.chat.id,
         username=message.from_user.username,
-        bot=bot)
+        bot=bot,
+        code=code,)
 
 
 async def send_welcome_callback(call: CallbackQuery, bot: AsyncTeleBot):
@@ -62,13 +69,15 @@ async def welcome(
         user_id: int,
         chat_id: int,
         username: Optional[str],
-        bot: AsyncTeleBot):
+        bot: AsyncTeleBot,
+        code: Optional[str] = None,):
     user_id = user_id
     states.set_state(IntroStates.MainMenu, str(user_id))
     u = await save_user(
         user_id=user_id,
         chat_id=chat_id,
-        username=username
+        username=username,
+        code=code
     )
     await bot.send_message(
         chat_id=chat_id,
@@ -77,7 +86,7 @@ async def welcome(
     )
 
 
-async def save_user(user_id: int, chat_id: int, username: Optional[str]) -> User:
+async def save_user(user_id: int, chat_id: int, username: Optional[str], code: Optional[str] = None) -> User:
     u = user_collection.get_user_by_tg_id(user_id)
     if u is None:
         u = user.User(
@@ -90,7 +99,9 @@ async def save_user(user_id: int, chat_id: int, username: Optional[str]) -> User
             favorites=[],
             last_activity=datetime.now()
         )
-        user_collection.add_user(u)
+        _id = user_collection.add_user(u)
+        if code is not None:
+            stat_collection.new_user_deeplink(code, _id)
     return u
 
 
@@ -109,7 +120,7 @@ async def show_admin_menu(call: CallbackQuery, bot: AsyncTeleBot):
 async def place_preview(call: CallbackQuery, bot: AsyncTeleBot):
     await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
-    text = """Чтобы подобрать для Вас рестораны, мне нужно точка, вокруг которой я буду искать заведения.\n
+    text = """Чтобы подобрать для Вас рестораны, мне нужна точка, вокруг которой я буду искать заведения.\n
 Вы можете прислать отдельную точку, либо нажать кнопку ниже, чтобы рестораны сразу возле тебя."""
     text_filter = await show_filters(user_id)
     text += text_filter
