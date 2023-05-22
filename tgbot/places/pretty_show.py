@@ -52,7 +52,9 @@ def pretty_show_place(place: Place, distance: Optional[float]) -> str:
     place_str = ""
     if place['place_type'] == PlaceType.Restaurant:
         if place.get('place') is not None:
-            place_str = pretty_show_restaurant(place['place']) + '\n\n'
+            res = pretty_show_restaurant(place['place'])
+            if res != "":
+                place_str = pretty_show_restaurant(place['place']) + '\n\n'
 
     place_adr = place['address'].split(',')[1:]
     address = "Адрес: <i>"

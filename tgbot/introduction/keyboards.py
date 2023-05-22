@@ -19,9 +19,9 @@ def show_admin_menu(user_id: int):
 def filters(vegan: bool, business: bool, hookah: bool):
     def checker(param: bool):
         if param:
-            return "да"
+            return "ДА"
         else:
-            return "нет"
+            return "НЕТ"
 
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Рейтинг заведения', callback_data="rating"),
