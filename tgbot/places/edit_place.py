@@ -144,7 +144,7 @@ def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Option
     if place is None:
         return None
 
-    if place['place_type'] == PlaceType.Restaurant:
+    if place['place_types'] == PlaceType.Restaurant:
         restaurant = Restaurant(
             mid_price=None if place_map['mid_price'] == "нет" else place_map['mid_price'],
             business_lunch=place_map['business_lunch'] == "да",

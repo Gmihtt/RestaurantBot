@@ -11,7 +11,9 @@ async def save_photos(bot: AsyncTeleBot):
     chat_id = 381873540
     path = config.photos_path
     places = os.listdir(path=path)
+    count = 0
     for place_id in places:
+        print(place_id)
         if place_id != ".DS_Store":
             path = config.photos_path + '/' + place_id
             photos = os.listdir(path=path)
@@ -22,18 +24,21 @@ async def save_photos(bot: AsyncTeleBot):
                     path = config.photos_path + '/' + place_id + '/' + photo_name
                     with open(path, "rb") as f:
                         photo = f.read()
-                    message = await bot.send_photo(chat_id=chat_id, photo=photo)
-                    os.remove(path)
-                    files.append(
-                        File(
-                            file_id=message.photo[0].file_id,
-                            file=FileTypes.Photo
+                    if os.stat(path).st_size == 0:
+                        os.remove(path)
+                    else:
+                        message = await bot.send_photo(chat_id=chat_id, photo=photo)
+                        os.remove(path)
+                        files.append(
+                            File(
+                                file_id=message.photo[0].file_id,
+                                file=FileTypes.Photo
+                            )
                         )
-                    )
-                    await asyncio.sleep(1)
+                        await asyncio.sleep(1)
+            count += 1
+            print(count)
             os.rmdir(config.photos_path + '/' + place_id)
             if files:
                 place['files'] = files
                 place_collection.update_place(place)
-
-

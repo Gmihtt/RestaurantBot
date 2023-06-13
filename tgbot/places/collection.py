@@ -47,7 +47,12 @@ class PlaceCollection(Database):
         if filters.get('rating') is not None:
             q['place.rating'] = {"$gte": float(filters['rating'])}
 
+        place_types = values.get_list('place_types', user_id)
+        if place_types:
+            q['place_types'] = {"$in": place_types}
+
         res_q = self.collection.find(q, skip=skip, limit=limit, )
+        print(q)
         res = []
         for doc in res_q:
             res.append(place.convert_doc_to_place(doc))

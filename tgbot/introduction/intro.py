@@ -8,6 +8,8 @@ from tgbot.introduction import user
 from tgbot.introduction.collection import user_collection, stat_collection
 from tgbot.introduction.user import User
 from tgbot.photos import save_photos
+from tgbot.places.place import PlaceType
+from tgbot.places.pretty_show import pretty_show_place_type
 from tgbot.utils import states, values, functions
 from tgbot.config import main_admins
 from tgbot.introduction import keyboards
@@ -27,7 +29,6 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
 """, reply_markup=keyboards.show_admins_chose_buttons())
     else:
         code = extract_unique_code(message.text)
-        print(code)
         await send_welcome(message, bot, code)
 
 
@@ -35,8 +36,7 @@ intro_text = """
 Привет!
 
 Я  бот, который поможет тебе найти крутой ресторан, 
-или атмосферное кафе для приятного время провождения в Москве, 
-Санкт-Петербурге и Сочи прямо возле тебя!
+или атмосферное кафе для приятного время провождения в Москве, Санкт-Петербурге, Сочи и Калининграде прямо возле тебя!
 
 Для использования нажми кнопку Найти место!
 
@@ -161,6 +161,12 @@ async def show_filters(user_id: str):
         if filters_map.get('rating') is not None:
             rating = filters_map['rating']
             text += '\n' + "Рейтинг от: " + rating
+
+        if values.get_list('place_types', user_id):
+            place_types = values.get_list('place_types', user_id)
+            text += '\n' + "Тип заведений: "
+            for p_t in place_types:
+                text += pretty_show_place_type(PlaceType(p_t)) + " "
 
         if filters_map.get('business') is not None:
             text += '\n' + "Бизнес-ланч: " + ("да" if filters_map['business'] == 'True' else "нет")

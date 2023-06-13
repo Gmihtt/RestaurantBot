@@ -18,14 +18,24 @@ def show_places(
         crds2 = place['coordinates']
         distance = count_distance(crds1, crds2)
         if distance <= max_distance:
-            distance = str(round(distance, 1))
+            if distance >= 1:
+                distance = str(round(distance, 1))
 
-            markup.add(InlineKeyboardButton(
-                place['name'] + ' (' + distance + 'км' + ')',
-                callback_data="place_id" + str(place['_id'])
-            ),
-                row_width=1
-            )
+                markup.add(InlineKeyboardButton(
+                    place['name'] + ' (' + distance + 'км' + ')',
+                    callback_data="place_id" + str(place['_id'])
+                ),
+                    row_width=1
+                )
+            else:
+                distance = str(int(round(distance, 4) * 1000))
+
+                markup.add(InlineKeyboardButton(
+                    place['name'] + ' (' + distance + ' метр.' + ')',
+                    callback_data="place_id" + str(place['_id'])
+                ),
+                    row_width=1
+                )
         else:
             max_radius = True
             break
@@ -59,17 +69,6 @@ def show_place(place_id: str,
         markup.add(InlineKeyboardButton("Добавить в избранное", callback_data="favorite_add" + place_id))
     markup.add(InlineKeyboardButton("Вернуться к списку", callback_data="places_cur"))
     return markup
-
-
-def show_all_places_type():
-    places_type = [p_t for p_t in PlaceType]
-    markup = InlineKeyboardMarkup()
-    line = []
-    for place_type in places_type:
-        line.append(InlineKeyboardButton(place_type, callback_data="place_type" + place_type))
-        markup.add(*line, row_width=1)
-        line = []
-    return
 
 
 def approve_place():

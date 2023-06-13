@@ -45,24 +45,34 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
 def pretty_show_place(place: Place, distance: Optional[float]) -> str:
     name = '<b>' + place['name'] + '</b>\n\n'
 
+    place_types = ""
+    for i, p_t in enumerate(place['place_types']):
+        place_types += pretty_show_place_type(PlaceType(p_t))
+        if i != len(place['place_types']) - 1:
+            place_types += ", "
+    place_types += "\n\n"
+
     dist = ""
     if distance is not None:
-        dist = "Расстояние до места: <i>" + str(round(distance, 1)) + " км.</i>\n"
+        dist = "Расстояние до места: <i>"
+        if distance < 1:
+            dist += str(int(round(distance, 4)) * 1000) + " метр.</i>\n"
+        else:
+            dist += str(round(distance, 1)) + " км.</i>\n"
+        dist += "\n"
 
     place_str = ""
-    if place['place_type'] == PlaceType.Restaurant:
-        if place.get('place') is not None:
-            res = pretty_show_restaurant(place['place'])
-            if res != "":
-                place_str = pretty_show_restaurant(place['place']) + '\n\n'
+    if place.get('place') is not None:
+        res = pretty_show_restaurant(place['place'])
+        if res != "":
+            place_str = pretty_show_restaurant(place['place']) + '\n'
 
     place_adr = place['address'].split(',')[1:]
     address = "Адрес: <i>"
     for i, adr in enumerate(place_adr):
+        address += adr
         if i != len(place_adr) - 1:
-            address += adr + ', '
-        else:
-            address += adr
+            address += ', '
     address += '</i>\n\n'
 
     work_interval = ""
@@ -78,8 +88,20 @@ def pretty_show_place(place: Place, distance: Optional[float]) -> str:
 
     return (name +
             dist +
+            place_types +
             place_str +
             address +
             work_interval +
             description
             )
+
+
+def pretty_show_place_type(p_t: PlaceType):
+    if p_t == PlaceType.Restaurant:
+        return "Ресторан"
+    if p_t == PlaceType.Bar:
+        return "Бар"
+    if p_t == PlaceType.Cafe:
+        return "Кафе"
+    if p_t == PlaceType.Lounge:
+        return "Lounge-Бар"

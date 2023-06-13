@@ -2,7 +2,8 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
 from tgbot.places.find_place import show_places
-from tgbot.places.place import Coordinates
+from tgbot.places.place import Coordinates, PlaceType
+from tgbot.places.pretty_show import pretty_show_place_type
 from tgbot.utils import states, values, functions
 from tgbot.introduction import keyboards
 from tgbot.introduction.states import IntroStates
@@ -40,6 +41,12 @@ async def set_filters(call: CallbackQuery, bot: AsyncTeleBot):
         if filters_map.get('rating') is not None:
             rating = filters_map['rating']
             text += '\n' + "Рейтинг от: " + rating
+
+        if values.get_list('place_types', user_id):
+            place_types = values.get_list('place_types', user_id)
+            text += '\n' + "Тип заведений: "
+            for p_t in place_types:
+                text += pretty_show_place_type(PlaceType(p_t)) + " "
 
     vegan = filters_map['vegan'] == 'True'
     hookah = filters_map['hookah'] == 'True'
@@ -153,7 +160,7 @@ async def filter_mid_price(call: CallbackQuery, bot: AsyncTeleBot):
 async def filter_rating(call: CallbackQuery, bot: AsyncTeleBot):
     await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
-    states.set_state(IntroStates.Rating, str(user_id))
+    states.set_state(IntroStates.Rating, user_id)
     data = call.data
 
     text = "Выберите рейтинг заведения: "
@@ -173,6 +180,35 @@ async def filter_rating(call: CallbackQuery, bot: AsyncTeleBot):
         chat_id=call.message.chat.id,
         text=text,
         reply_markup=keyboards.rating())
+
+
+async def filter_place_type(call: CallbackQuery, bot: AsyncTeleBot):
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
+    user_id = str(call.from_user.id)
+    states.set_state(IntroStates.PlaceTypes, user_id)
+    data = call.data
+    text = "Выберите какой формат заведения вам нужен: "
+
+    if data == 'drop':
+        values.delete_list('place_types', user_id)
+    elif data != 'place_types':
+        p_t = values.get_list('place_types', user_id)
+        if p_t is not None and data not in p_t:
+            values.add_value_to_list('place_types', data, user_id)
+        if p_t is None:
+            values.add_value_to_list('place_types', data, user_id)
+
+    place_types = values.get_list('place_types', user_id)
+    if place_types is not None:
+        text += "\n\nВы выбрали заведения такого типа: "
+        print(place_types)
+        for p_t in place_types:
+            text += pretty_show_place_type(PlaceType(p_t)) + " "
+
+    await bot.send_message(
+        chat_id=call.message.chat.id,
+        text=text,
+        reply_markup=keyboards.show_place_type())
 
 
 async def msg_drop_filters(call: CallbackQuery, bot: AsyncTeleBot):

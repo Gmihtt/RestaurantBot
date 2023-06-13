@@ -243,10 +243,18 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    chat_id = call.message.chat.id
     d = values.get_all_values_from_map('place_map', user_id)
+
+    if d.get("location_id") is not None:
+        await functions.delete_message(chat_id=chat_id,
+                                       msg_id=int(d["location_id"]),
+                                       bot=bot
+                                       )
+
     place = place_collection.find_place_by_id(d['place_id'])
     location = place['coordinates']
-    message = await bot.send_location(chat_id=call.message.chat.id,
+    message = await bot.send_location(chat_id=chat_id,
                                       longitude=location['longitude'],
                                       latitude=location['latitude'])
     values.add_values_to_map('place_map', {"location_id": str(message.id)}, user_id)
@@ -254,16 +262,32 @@ async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def send_phone(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    chat_id = call.message.chat.id
     d = values.get_all_values_from_map('place_map', user_id)
+
+    if d.get("phone_id") is not None:
+        await functions.delete_message(chat_id=chat_id,
+                                       msg_id=int(d["phone_id"]),
+                                       bot=bot
+                                       )
+
     place = place_collection.find_place_by_id(d['place_id'])
     phone = place['phone'].replace(' ', '')
-    message = await bot.send_message(chat_id=call.message.chat.id, text=phone)
+    message = await bot.send_message(chat_id=chat_id, text=phone)
     values.add_values_to_map('place_map', {"phone_id": str(message.id)}, user_id)
 
 
 async def send_site(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    chat_id = call.message.chat.id
     d = values.get_all_values_from_map('place_map', user_id)
+
+    if d.get("site_id") is not None:
+        await functions.delete_message(chat_id=chat_id,
+                                       msg_id=int(d["site_id"]),
+                                       bot=bot
+                                       )
+
     place = place_collection.find_place_by_id(d['place_id'])
     site = place['url']
     message = await bot.send_message(chat_id=call.message.chat.id, text=site)

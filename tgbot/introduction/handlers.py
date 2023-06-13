@@ -33,11 +33,18 @@ def menu_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(statistics.deeplink,
                                         func=lambda c: check_callback_text(c, "deeplink"),
                                         pass_bot=True)
+    bot.register_callback_query_handler(statistics.show_stat_by_cities,
+                                        func=lambda c: check_callback_text(c, "cities"),
+                                        pass_bot=True)
     bot.register_callback_query_handler(statistics.show_stat,
                                         func=lambda c: check_state(c, IntroStates.Statistics),
                                         pass_bot=True)
     bot.register_callback_query_handler(statistics.deeplink,
                                         func=lambda c: check_state(c, IntroStates.DeepLink),
+                                        pass_bot=True
+                                        )
+    bot.register_callback_query_handler(statistics.show_stat_by_cities,
+                                        func=lambda c: check_state(c, IntroStates.Cities),
                                         pass_bot=True
                                         )
 
@@ -63,6 +70,12 @@ def filters_handlers(bot: AsyncTeleBot):
                                         pass_bot=True)
     bot.register_callback_query_handler(filters.filter_rating,
                                         func=lambda c: check_state(c, IntroStates.Rating),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(filters.filter_place_type,
+                                        func=lambda c: check_callback_text(c, "place_types"),
+                                        pass_bot=True)
+    bot.register_callback_query_handler(filters.filter_place_type,
+                                        func=lambda c: check_state(c, IntroStates.PlaceTypes),
                                         pass_bot=True)
     bot.register_callback_query_handler(filters.set_vegan,
                                         func=lambda c: check_callback_text(c, "vegan"),

@@ -2,7 +2,7 @@ from typing import List
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-from tgbot.config import main_admins, kitchens
+from tgbot.config import main_admins, kitchens, cities
 
 
 def show_admin_menu(user_id: int):
@@ -24,6 +24,8 @@ def filters(vegan: bool, business: bool, hookah: bool):
             return "НЕТ"
 
     markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Тип заведения', callback_data="place_types"),
+               row_width=1)
     markup.add(InlineKeyboardButton('Рейтинг заведения', callback_data="rating"),
                InlineKeyboardButton('Веганские: ' + checker(vegan), callback_data="vegan"),
                row_width=2)
@@ -131,6 +133,7 @@ def statistics():
                InlineKeyboardButton('Количество за неделю', callback_data="stat_week"),
                InlineKeyboardButton('Количество за месяц', callback_data="stat_month"),
                InlineKeyboardButton('deeplink', callback_data="deeplink"),
+               InlineKeyboardButton('по городам', callback_data="cities"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуть в меню', callback_data="admin_user"))
     return markup
@@ -171,4 +174,26 @@ def show_deeplink_stat(deeplinks: List[str], pos: int):
     else:
         markup.add(InlineKeyboardButton('⬅️', callback_data="back"), row_width=1)
     markup.add(InlineKeyboardButton('Вернуться к статистикам', callback_data="statistics"))
+    return markup
+
+
+def show_place_type():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Бар', callback_data="bar"),
+               InlineKeyboardButton('Ресторан', callback_data="restaurant"),
+               InlineKeyboardButton('Кафе', callback_data="cafe"),
+               row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))
+    return markup
+
+
+def show_cities():
+    markup = InlineKeyboardMarkup()
+    print(kitchens)
+    print(cities)
+    for city in cities:
+        markup.add(InlineKeyboardButton(city, callback_data=city), row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))
     return markup

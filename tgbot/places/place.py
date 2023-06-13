@@ -1,4 +1,4 @@
-from typing import TypedDict, Optional, Union, List, Dict, Any
+from typing import TypedDict, Optional, List, Dict, Any
 
 from strenum import StrEnum
 
@@ -12,16 +12,19 @@ class Coordinates(TypedDict):
 
 class PlaceType(StrEnum):
     Restaurant = "restaurant"
+    Bar = "bar"
+    Cafe = "cafe"
+    Lounge = "lounge"
 
 
 class Restaurant(TypedDict):
     mid_price: Optional[int]
-    business_lunch: bool
+    business_lunch: Optional[bool]
     business_lunch_price: Optional[int]
     kitchens: List[str]
     features: List[str]
     rating: Optional[float]
-    vegan: bool
+    vegan: Optional[bool]
 
 
 class Place(TypedDict):
@@ -36,13 +39,13 @@ class Place(TypedDict):
     description: Optional[str]
     last_modify_id: Optional[int]
     files: List[File]
-    place_type: Optional[PlaceType]
-    place: Union[Restaurant, None]
+    place_types: List[PlaceType]
+    place: Optional[Restaurant]
     yandex_id: Optional[str]
 
 
 def convert_doc_to_place(d: Dict[str, Any]) -> Place:
-    place = {
+    place: Place = {
         "_id": d['_id'],
         "name": d['name'],
         "city": d['city'],
@@ -57,27 +60,29 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         "work_interval": d.get('work_interval'),
         "description": d.get('description'),
         "last_modify_id": d.get('last_modify_id'),
-        "yandex_id": d.get('yandex_id')
+        "yandex_id": d.get('yandex_id'),
+        "place_types": [],
+        "place": None
     }
-    if d.get('place_type') is not None:
-        place_type = PlaceType(d['place_type'])
-        place['place_type'] = place_type
+    print(d)
+    if d.get('place_types') is not None:
+        place_types = list(map(PlaceType, d['place_types']))
+        place['place_types'] = place_types
         if d.get('place') is not None:
-            if place_type == PlaceType.Restaurant:
-                restaurant = Restaurant(
+            restaurant = Restaurant(
                     mid_price=d['place'].get('mid_price'),
                     business_lunch=d['place'].get('business_lunch'),
                     business_lunch_price=d['place'].get('business_lunch_price'),
-                    kitchens=d['place']['kitchens'],
+                    kitchens=d['place'].get('kitchens', []),
                     rating=d['place'].get('rating'),
                     vegan=d['place'].get('vegan'),
-                    features=d['place']['features'],
-                )
-                place['place'] = restaurant
+                    features=d['place'].get('features', []),
+            )
+            place['place'] = restaurant
         else:
             place['place'] = None
     else:
-        place['place_type'] = None
+        place['place_types'] = []
         place['place'] = None
     return place
 
@@ -85,6 +90,6 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
 def convert_place_to_doc(p: Place) -> Dict[str, Any]:
     d = dict(p)
     d['_id'] = str(p['_id'])
-    d['place_type'] = p.get('place_type').value
+    d['place_types'] = list(map(lambda p_t: p_t.value, p['place_types']))
     d['files'] = list(map(convert_file_to_dict, p['files']))
     return d

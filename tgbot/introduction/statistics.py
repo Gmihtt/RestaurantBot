@@ -30,10 +30,10 @@ async def show_stat(call: CallbackQuery, bot: AsyncTeleBot):
         user_count = user_collection.users_count()
         period = "за все время"
     if data == "stat_hour":
-        user_count = user_collection.users_stat(cur_date-timedelta(hours=1))
+        user_count = user_collection.users_stat(cur_date - timedelta(hours=1))
         period = "за последний час"
     if data == "stat_day":
-        user_count = user_collection.users_stat(cur_date-timedelta(days=1))
+        user_count = user_collection.users_stat(cur_date - timedelta(days=1))
         period = "за весь день"
     if data == "stat_week":
         user_count = user_collection.users_stat(cur_date - timedelta(days=7))
@@ -62,7 +62,7 @@ async def deeplink(call: CallbackQuery, bot: AsyncTeleBot):
         pos = 0
         v = {
             'codes': str_codes,
-            'pos': pos
+            'pos': str(pos)
         }
         values.add_values_to_map('deeplink', v, user_id)
     else:
@@ -93,3 +93,25 @@ async def deeplink(call: CallbackQuery, bot: AsyncTeleBot):
                            chat_id=call.message.chat.id,
                            reply_markup=keyboards.show_deeplink_stat(codes, pos)
                            )
+
+
+async def show_stat_by_cities(call: CallbackQuery, bot: AsyncTeleBot):
+    await functions.delete_message(call.message.chat.id, call.message.id, bot)
+    user_id = str(call.from_user.id)
+    states.set_state(IntroStates.Cities, user_id)
+    data = call.data
+    if data == "cities":
+        await bot.send_message(text="выберите город",
+                               chat_id=call.message.chat.id,
+                               reply_markup=keyboards.show_cities())
+    else:
+        cur_date = datetime.now()
+        last_users = user_collection.users_stat(time=cur_date - timedelta(days=30), city=data)
+        all_users = user_collection.users_stat(time=cur_date - timedelta(days=365 * 10), city=data)
+        await bot.send_message(
+            chat_id=call.message.chat.id,
+            text=f"в городе {data}\n"
+                 f"количество людей за последние 30 дней: {last_users}\n"
+                 f"количество людей за все время: {all_users}"
+        )
+        await show_statistics(call, bot)

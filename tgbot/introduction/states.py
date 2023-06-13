@@ -13,3 +13,5 @@ class IntroStates(StrEnum):
     Help = "help"
     Statistics = "statistics"
     DeepLink = "deeplink"
+    Cities = "cities"
+    PlaceTypes = "place_types"

@@ -99,17 +99,13 @@ class UserCollection(Database):
         u = self.collection.find_one({"user_tg_id": user_id})
         return u.get('is_admin') is not None
 
-    def users_stat(self, time: datetime, user_ids: Optional[List[str]] = None) -> int:
-        if user_ids is None:
-            v = {
-                'last_activity': {"$gte": time},
-            }
-        else:
+    def users_stat(self, time: datetime, user_ids: Optional[List[str]] = None, city: Optional[str] = None) -> int:
+        v = {'last_activity': {"$gte": time}}
+        if user_ids is not None:
             ids: List[ObjectId] = list(map(ObjectId, user_ids))
-            v = {
-                'last_activity': {"$gte": time},
-                '_id': {"$in": ids}
-            }
+            v['_id'] = {"$in": ids}
+        if city is not None:
+            v['city'] = city
         users = self.collection.find(v)
 
         return len(list(users))
