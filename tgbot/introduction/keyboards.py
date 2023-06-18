@@ -190,8 +190,6 @@ def show_place_type():
 
 def show_cities():
     markup = InlineKeyboardMarkup()
-    print(kitchens)
-    print(cities)
     for city in cities:
         markup.add(InlineKeyboardButton(city, callback_data=city), row_width=1)
     markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
