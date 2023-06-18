@@ -39,7 +39,7 @@ class PlaceCollection(Database):
         if filters.get('mid_price') is not None:
             q['place.mid_price'] = {"$gte": int(filters['mid_price'])}
         else:
-            q['place.mid_price'] = {"$gte": 500}
+            q['place.mid_price'] = {"$gte": 300}
 
         if filters.get('rating') is not None:
             q['place.rating'] = {"$gte": float(filters['rating'])}
