@@ -45,7 +45,7 @@ async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
     values.set_value('places', "location", str(user_id))
 
     if count == 0:
-        text = "Под твои фильтры не найдено заведений, либо твой город не поддерживается.\n" \
+        text = "Под твои фильтры не найдено заведений, либо твой город не доступен для поиска.\n" \
                "Продолжить поиск без фильтров или изменить фильтры?"
         await bot.send_message(
             chat_id=message.chat.id,
