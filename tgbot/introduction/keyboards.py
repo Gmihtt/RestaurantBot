@@ -77,14 +77,14 @@ def main_menu(favorites: bool):
 
 def mid_price():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('до 500₽', callback_data="price_500"),
-               InlineKeyboardButton('до 1000₽', callback_data="price_1000"),
-               InlineKeyboardButton('до 1500₽', callback_data="price_1500"),
-               InlineKeyboardButton('до 2000₽', callback_data="price_2000"),
-               InlineKeyboardButton('до 2500₽', callback_data="price_2500"),
-               InlineKeyboardButton('до 3500₽', callback_data="price_3500"),
-               InlineKeyboardButton('до 5000₽', callback_data="price_5000"),
-               InlineKeyboardButton('от 5000₽', callback_data="price_5001"),
+    markup.add(InlineKeyboardButton('от 0₽', callback_data="price_0"),
+               InlineKeyboardButton('от 500₽', callback_data="price_500"),
+               InlineKeyboardButton('от 1000₽', callback_data="price_1000"),
+               InlineKeyboardButton('от 1500₽', callback_data="price_1500"),
+               InlineKeyboardButton('от 2000₽', callback_data="price_2000"),
+               InlineKeyboardButton('от 2500₽', callback_data="price_2500"),
+               InlineKeyboardButton('от 3500₽', callback_data="price_3500"),
+               InlineKeyboardButton('от 5000₽', callback_data="price_5000"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
     markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))

@@ -10,6 +10,7 @@ from tgbot.introduction.user import User
 from tgbot.photos import save_photos
 from tgbot.places.place import PlaceType
 from tgbot.places.pretty_show import pretty_show_place_type
+from tgbot.texts import intro_text, place_point_text
 from tgbot.utils import states, values, functions
 from tgbot.config import main_admins
 from tgbot.introduction import keyboards
@@ -25,26 +26,11 @@ async def check_welcome(message: Message, bot: AsyncTeleBot):
     states.set_state(IntroStates.Welcome, str(user_id))
     if user_id in main_admins: #or user_collection.is_admin(user_id):
         await bot.reply_to(message, """
-Выберете интерфейс
+Выбери интерфейс
 """, reply_markup=keyboards.show_admins_chose_buttons())
     else:
         code = extract_unique_code(message.text)
         await send_welcome(message, bot, code)
-
-
-intro_text = """
-Привет!
-
-Я  бот, который поможет тебе найти крутой ресторан, 
-или атмосферное кафе для приятного время провождения в Москве, Санкт-Петербурге, Сочи и Калининграде прямо возле тебя!
-
-Для использования нажми кнопку Найти место!
-
-Если ты не ешь мясо, или хочешь определенную кухню, или, чтобы средний чек был до 1000 рублей, 
-то жми на кнопку Параметры поиска и выставляй нужные фильтры!
-
-Приятного время провождения!
-"""
 
 
 async def send_welcome(message: Message, bot: AsyncTeleBot, code: Optional[str] = None):
@@ -83,7 +69,8 @@ async def welcome(
     await bot.send_message(
         chat_id=chat_id,
         text=intro_text,
-        reply_markup=keyboards.main_menu(favorites=u['favorites'] != [])
+        reply_markup=keyboards.main_menu(favorites=u['favorites'] != []),
+        parse_mode="html"
     )
 
 
@@ -121,13 +108,12 @@ async def show_admin_menu(call: CallbackQuery, bot: AsyncTeleBot):
 async def place_preview(call: CallbackQuery, bot: AsyncTeleBot):
     await functions.delete_message(call.message.chat.id, call.message.id, bot)
     user_id = str(call.from_user.id)
-    text = """Чтобы подобрать для Вас рестораны, мне нужна точка, вокруг которой я буду искать заведения.\n
-Вы можете прислать отдельную точку, либо нажать кнопку ниже, чтобы рестораны сразу возле тебя."""
+    text = place_point_text
     text_filter = await show_filters(user_id)
     text += text_filter
     message = await bot.send_message(
         chat_id=call.message.chat.id,
-        text="Пришлите местоположение",
+        text="Отправь местоположение",
         reply_markup=keyboards.find_place()
     )
     chat_id = call.message.chat.id
@@ -136,7 +122,8 @@ async def place_preview(call: CallbackQuery, bot: AsyncTeleBot):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=keyboards.back_main_menu()
+        reply_markup=keyboards.back_main_menu(),
+        parse_mode="html"
     )
 
 
@@ -144,42 +131,40 @@ async def show_filters(user_id: str):
     text = ""
     filters_map = values.get_all_values_from_map('filters_map', user_id)
     if filters_map:
-        text += "\n\n" + "Фильтры, которые Вы выбрали: "
+        text += "\n" + "Выбранные фильтры: "
         kitchens = values.get_list('kitchens', user_id)
         if kitchens is not None and kitchens != []:
-            text += '\n\n' + "Кухни: "
+            text += '\n\n' + "Кухни: <i>"
             for kitchen in kitchens:
                 text += kitchen + " "
+            text += "</i>"
 
         if filters_map.get('mid_price') is not None:
             mid_price = int(filters_map['mid_price'])
-            if mid_price <= 5000:
-                text += '\n' + "Средний чек: до " + str(mid_price) + '₽'
-            else:
-                text += '\n' + "Средний чек: от " + str(5000) + '₽'
+            text += '\n' + "Средний чек от: <i>" + str(mid_price) + '₽</i>'
 
         if filters_map.get('rating') is not None:
             rating = filters_map['rating']
-            text += '\n' + "Рейтинг от: " + rating
+            text += '\n' + "Рейтинг от: <i>" + rating + "</i>"
 
         if values.get_list('place_types', user_id):
             place_types = values.get_list('place_types', user_id)
-            text += '\n' + "Тип заведений: "
+            text += '\n' + "Тип заведений: <i>"
             for p_t in place_types:
                 text += pretty_show_place_type(PlaceType(p_t)) + " "
+            text += "</i>"
 
-        if filters_map.get('business') is not None:
-            text += '\n' + "Бизнес-ланч: " + ("да" if filters_map['business'] == 'True' else "нет")
+        if filters_map.get('business') is not None and filters_map['business'] == 'True':
+            text += '\n' + "Бизнес-ланч: <i>" + ("да" if filters_map['business'] == 'True' else "нет") + "</i>"
 
-        if filters_map.get('vegan') is not None:
-            text += '\n' + "Веганское меню: " + ("да" if filters_map['vegan'] == 'True' else "нет")
+        if filters_map.get('vegan') is not None and filters_map['vegan'] == 'True':
+            text += '\n' + "Веганское меню: <i>" + ("да" if filters_map['vegan'] == 'True' else "нет") + "</i>"
 
-        if filters_map.get('terrace') is not None:
-            text += '\n' + "Летняя терраса: " + ("да" if filters_map['terrace'] == 'True' else "нет")
+        if filters_map.get('terrace') is not None and filters_map['terrace'] == 'True':
+            text += '\n' + "Летняя терраса: <i>" + ("да" if filters_map['terrace'] == 'True' else "нет") + "</i>"
 
-        if filters_map.get('hookah') is not None:
-            text += '\n' + "Есть кальян: " + ("да" if filters_map['hookah'] == 'True' else "нет")
+        if filters_map.get('hookah') is not None and filters_map['hookah'] == 'True':
+            text += '\n' + "Есть кальян: <i>" + ("да" if filters_map['hookah'] == 'True' else "нет") + "</i>"
     else:
-        text += """\n\nВ данный момент ты не применил никаких фильтров,
-если тебе это понадобится, ты всегда можно это сделать в основном меню."""
+        text += "\n\nСейчас ты не применил никаких фильтров, но ты можешь сделать это в любой момент!"
     return text

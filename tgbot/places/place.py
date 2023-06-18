@@ -64,7 +64,6 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         "place_types": [],
         "place": None
     }
-    print(d)
     if d.get('place_types') is not None:
         place_types = list(map(PlaceType, d['place_types']))
         place['place_types'] = place_types

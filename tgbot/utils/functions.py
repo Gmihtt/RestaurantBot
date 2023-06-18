@@ -104,3 +104,29 @@ async def delete_old_msg(chat_id: int, bot: AsyncTeleBot):
     if m_id is not None:
         await delete_message(chat_id, int(m_id), bot)
         values.delete_value('msg_id_delete', str(chat_id))
+
+
+def create_metre_str(metre: int):
+    if 11 <= metre % 100 <= 19:
+        return str(metre) + ' метров.'
+    if metre % 10 == 0:
+        return str(metre) + ' метров.'
+    if metre % 10 == 1:
+        return str(metre) + ' метр.'
+    if 2 <= metre % 10 <= 4:
+        return str(metre) + ' метра.'
+    if 5 <= metre % 10 <= 9:
+        return str(metre) + ' метров.'
+
+
+def place_count_str(count: int):
+    if 11 <= count % 100 <= 19:
+        return str(count) + ' заведений'
+    if count % 10 == 0:
+        return str(count) + ' заведений'
+    if count % 10 == 1:
+        return str(count) + ' заведение'
+    if 2 <= count % 10 <= 4:
+        return str(count) + ' заведения'
+    if 5 <= count % 10 <= 9:
+        return str(count) + ' заведений'
