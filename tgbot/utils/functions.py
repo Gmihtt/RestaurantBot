@@ -6,8 +6,9 @@ from telebot.types import InputMediaPhoto, InputMediaVideo, Message
 
 from tgbot import common_keyboards
 from tgbot.common_types import File, FileTypes
-from tgbot.config import main_admins
+from tgbot.config import main_admins, max_distance
 from tgbot.databases.database import db
+from tgbot.places.collection import place_collection
 from tgbot.places.place import Coordinates
 from tgbot.utils import values
 
@@ -82,8 +83,50 @@ def count_distance(crds1: Coordinates, crds2: Coordinates):
     )
 
 
+def count_relevant_places(user_id: str, crds: Coordinates):
+    places = place_collection.find_close_place(crds, user_id, skip=0, limit=0)
+    count = 0
+    for place in places:
+        if count_distance(crds, place['coordinates']) <= max_distance:
+            count += 1
+    return count
+
+
 async def delete_message(chat_id: int, msg_id: int, bot: AsyncTeleBot):
     try:
         await bot.delete_message(chat_id, msg_id)
     except Exception:
         return
+
+
+async def delete_old_msg(chat_id: int, bot: AsyncTeleBot):
+    m_id = values.get_value('msg_id_delete', str(chat_id))
+    if m_id is not None:
+        await delete_message(chat_id, int(m_id), bot)
+        values.delete_value('msg_id_delete', str(chat_id))
+
+
+def create_metre_str(metre: int):
+    if 11 <= metre % 100 <= 19:
+        return str(metre) + ' метров.'
+    if metre % 10 == 0:
+        return str(metre) + ' метров.'
+    if metre % 10 == 1:
+        return str(metre) + ' метр.'
+    if 2 <= metre % 10 <= 4:
+        return str(metre) + ' метра.'
+    if 5 <= metre % 10 <= 9:
+        return str(metre) + ' метров.'
+
+
+def place_count_str(count: int):
+    if 11 <= count % 100 <= 19:
+        return str(count) + ' заведений'
+    if count % 10 == 0:
+        return str(count) + ' заведений'
+    if count % 10 == 1:
+        return str(count) + ' заведение'
+    if 2 <= count % 10 <= 4:
+        return str(count) + ' заведения'
+    if 5 <= count % 10 <= 9:
+        return str(count) + ' заведений'

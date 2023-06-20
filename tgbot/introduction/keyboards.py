@@ -1,6 +1,8 @@
+from typing import List
+
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-from tgbot.config import main_admins, kitchens
+from tgbot.config import main_admins, kitchens, cities
 
 
 def show_admin_menu(user_id: int):
@@ -17,11 +19,13 @@ def show_admin_menu(user_id: int):
 def filters(vegan: bool, business: bool, hookah: bool):
     def checker(param: bool):
         if param:
-            return "да"
+            return "ДА"
         else:
-            return "нет"
+            return "НЕТ"
 
     markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Тип заведения', callback_data="place_types"),
+               row_width=1)
     markup.add(InlineKeyboardButton('Рейтинг заведения', callback_data="rating"),
                InlineKeyboardButton('Веганские: ' + checker(vegan), callback_data="vegan"),
                row_width=2)
@@ -73,14 +77,14 @@ def main_menu(favorites: bool):
 
 def mid_price():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('до 500₽', callback_data="price_500"),
-               InlineKeyboardButton('до 1000₽', callback_data="price_1000"),
-               InlineKeyboardButton('до 1500₽', callback_data="price_1500"),
-               InlineKeyboardButton('до 2000₽', callback_data="price_2000"),
-               InlineKeyboardButton('до 2500₽', callback_data="price_2500"),
-               InlineKeyboardButton('до 3500₽', callback_data="price_3500"),
-               InlineKeyboardButton('до 5000₽', callback_data="price_5000"),
-               InlineKeyboardButton('от 5000₽', callback_data="price_5001"),
+    markup.add(InlineKeyboardButton('от 0₽', callback_data="price_0"),
+               InlineKeyboardButton('от 500₽', callback_data="price_500"),
+               InlineKeyboardButton('от 1000₽', callback_data="price_1000"),
+               InlineKeyboardButton('от 1500₽', callback_data="price_1500"),
+               InlineKeyboardButton('от 2000₽', callback_data="price_2000"),
+               InlineKeyboardButton('от 2500₽', callback_data="price_2500"),
+               InlineKeyboardButton('от 3500₽', callback_data="price_3500"),
+               InlineKeyboardButton('от 5000₽', callback_data="price_5000"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
     markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))
@@ -124,9 +128,12 @@ def drop_filters():
 def statistics():
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Количество юзеров', callback_data="stat_all"),
+               InlineKeyboardButton('Количество за час', callback_data="stat_hour"),
                InlineKeyboardButton('Количество за день', callback_data="stat_day"),
                InlineKeyboardButton('Количество за неделю', callback_data="stat_week"),
                InlineKeyboardButton('Количество за месяц', callback_data="stat_month"),
+               InlineKeyboardButton('deeplink', callback_data="deeplink"),
+               InlineKeyboardButton('по городам', callback_data="cities"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуть в меню', callback_data="admin_user"))
     return markup
@@ -144,4 +151,47 @@ def show_admins_chose_buttons():
     markup.add(InlineKeyboardButton('Интерфейс админа', callback_data="admin_user"),
                InlineKeyboardButton('Интерфейс пользователя', callback_data="just_user"),
                row_width=1)
+    return markup
+
+
+def show_deeplink_stat(deeplinks: List[str], pos: int):
+    markup = InlineKeyboardMarkup()
+    line = []
+    deeplinks = deeplinks[pos:pos + 10]
+    for deeplink in deeplinks:
+        line.append(InlineKeyboardButton(deeplink, callback_data="code" + deeplink))
+        if len(line) == 2:
+            markup.add(*line, row_width=2)
+            line = []
+    if len(line) != 0:
+        markup.add(*line, row_width=len(line))
+    if 0 < pos < len(kitchens) - 10:
+        markup.add(InlineKeyboardButton('⬅️', callback_data="back"),
+                   InlineKeyboardButton('➡️', callback_data="next"),
+                   row_width=2)
+    elif pos <= 0:
+        markup.add(InlineKeyboardButton('➡️', callback_data="next"), row_width=1)
+    else:
+        markup.add(InlineKeyboardButton('⬅️', callback_data="back"), row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться к статистикам', callback_data="statistics"))
+    return markup
+
+
+def show_place_type():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('Бар', callback_data="bar"),
+               InlineKeyboardButton('Ресторан', callback_data="restaurant"),
+               InlineKeyboardButton('Кафе', callback_data="cafe"),
+               row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))
+    return markup
+
+
+def show_cities():
+    markup = InlineKeyboardMarkup()
+    for city in cities:
+        markup.add(InlineKeyboardButton(city, callback_data=city), row_width=1)
+    markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))
     return markup

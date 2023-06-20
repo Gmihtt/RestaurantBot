@@ -1,12 +1,46 @@
 import logging
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 from bson import ObjectId
 
 from tgbot import config
 from tgbot.databases.mongo_db import Database
 from tgbot.introduction import user
+
+
+class StatisticsCollection(Database):
+    def __init__(self):
+        Database.__init__(self, config.statistics_collection)
+
+    def new_user_deeplink(self, code: str, user_id: str) -> str:
+        res = self.get_stat_by_code(code)
+        if res is None:
+            val = {
+                'code': code,
+                'user_ids': [user_id]
+            }
+            return self.collection.insert_one(val).inserted_id
+        else:
+            user_ids: List[str] = res['user_ids']
+            user_ids.append(user_id)
+            return self.collection.update_one({'code': code}, {"$set": {"user_ids": user_ids}}).upserted_id
+
+    def get_stat_by_code(self, code: str) -> Optional[Dict[str, Any]]:
+        val = self.collection.find_one({"code": code})
+        if val is None:
+            return None
+        else:
+            res = dict(val)
+            res.pop("_id")
+            return res
+
+    def get_all_codes(self):
+        codes = self.collection.find({}, {'code': True, '_id': False})
+        res = []
+        for code in codes:
+            res.append(code['code'])
+        return res
 
 
 class UserCollection(Database):
@@ -65,8 +99,15 @@ class UserCollection(Database):
         u = self.collection.find_one({"user_tg_id": user_id})
         return u.get('is_admin') is not None
 
-    def users_stat(self, time: datetime) -> int:
-        users = self.collection.find({'last_activity': {"$gte": time}})
+    def users_stat(self, time: datetime, user_ids: Optional[List[str]] = None, city: Optional[str] = None) -> int:
+        v = {'last_activity': {"$gte": time}}
+        if user_ids is not None:
+            ids: List[ObjectId] = list(map(ObjectId, user_ids))
+            v['_id'] = {"$in": ids}
+        if city is not None:
+            v['city'] = city
+        users = self.collection.find(v)
+
         return len(list(users))
 
     def users_count(self):
@@ -74,3 +115,4 @@ class UserCollection(Database):
 
 
 user_collection = UserCollection()
+stat_collection = StatisticsCollection()

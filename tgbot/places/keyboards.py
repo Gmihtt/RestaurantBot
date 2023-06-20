@@ -3,6 +3,7 @@ from typing import List
 
 from tgbot.config import max_distance
 from tgbot.places.place import Place, PlaceType, Coordinates
+from tgbot.utils import functions
 from tgbot.utils.functions import count_distance
 
 
@@ -17,15 +18,29 @@ def show_places(
     for place in places:
         crds2 = place['coordinates']
         distance = count_distance(crds1, crds2)
+        rating = ""
+        if place.get('place').get('rating') is not None:
+            r = place['place']['rating']
+            rating = str(round(r, 1)) + " ⭐️ "
         if distance <= max_distance:
-            distance = str(round(distance, 1))
+            if distance >= 1:
+                distance = str(round(distance, 1))
 
-            markup.add(InlineKeyboardButton(
-                place['name'] + ' (' + distance + 'км' + ')',
-                callback_data="place_id" + str(place['_id'])
-            ),
-                row_width=1
-            )
+                markup.add(InlineKeyboardButton(
+                    rating + place['name'] + ' (' + distance + 'км' + ')',
+                    callback_data="place_id" + str(place['_id'])
+                ),
+                    row_width=1
+                )
+            else:
+                distance = int(round(distance, 4) * 1000)
+
+                markup.add(InlineKeyboardButton(
+                    rating + place['name'] + ' (' + functions.create_metre_str(distance) + ')',
+                    callback_data="place_id" + str(place['_id'])
+                ),
+                    row_width=1
+                )
         else:
             max_radius = True
             break
@@ -36,10 +51,10 @@ def show_places(
                    row_width=2)
     elif start and not last:
         markup.add(InlineKeyboardButton('➡️', callback_data="places_next"), row_width=1)
-    elif max_radius or not start:
+    elif max_radius and not start:
         markup.add(InlineKeyboardButton('⬅️', callback_data="places_back"), row_width=1)
     markup.add(InlineKeyboardButton('Сбросить фильтры', callback_data="filters_drop"))
-    markup.add(InlineKeyboardButton('В меню', callback_data="main_menu"))
+    markup.add(InlineKeyboardButton('В главное меню', callback_data="main_menu"))
     return markup
 
 
@@ -57,19 +72,8 @@ def show_place(place_id: str,
         markup.add(InlineKeyboardButton("Удалить из избранного", callback_data="favorite_delete" + place_id))
     if not favorite:
         markup.add(InlineKeyboardButton("Добавить в избранное", callback_data="favorite_add" + place_id))
-    markup.add(InlineKeyboardButton("Вернуться к списку", callback_data="places_cur"))
+    markup.add(InlineKeyboardButton("Назад", callback_data="places_cur"))
     return markup
-
-
-def show_all_places_type():
-    places_type = [p_t for p_t in PlaceType]
-    markup = InlineKeyboardMarkup()
-    line = []
-    for place_type in places_type:
-        line.append(InlineKeyboardButton(place_type, callback_data="place_type" + place_type))
-        markup.add(*line, row_width=1)
-        line = []
-    return
 
 
 def approve_place():

@@ -17,7 +17,7 @@ from tgbot.utils import states, values
 async def place_search_message(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
     states.set_state(PlaceStates.Search, user_id)
-    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    await functions.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Заполни по шаблону информацию о месте, чтобы я мог его найти\n"""
                            """Пожалуйста, используйте только информацию из бота, в крайнем случае яндекса\n""")
@@ -110,7 +110,7 @@ async def place_restaurant_parse(message: Message, bot: AsyncTeleBot):
 
 async def add_kitchen(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
-    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    await functions.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     kitchen = call.data
     values.add_values_to_map({"kitchen": kitchen}, user_id)
     states.set_state(PlaceStates.AddFiles, user_id)
@@ -120,7 +120,7 @@ async def add_kitchen(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def place_file_message(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Отправь мне до 10 медиа, которые хотите добавить к посту\n"""
                                 """Лучше отправлять по одному сообщению""")
@@ -133,7 +133,7 @@ async def place_parse_file(message: Message, bot: AsyncTeleBot):
 async def place_description_msg(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
     states.set_state(PlaceStates.AddDescription, user_id)
-    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    await functions.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Пришлите мне описание места, одним текстовым сообщением""")
 
@@ -144,7 +144,7 @@ def get_place_from_storage(data: str, user_id: str, files: List[File]) -> Option
     if place is None:
         return None
 
-    if place['place_type'] == PlaceType.Restaurant:
+    if place['place_types'] == PlaceType.Restaurant:
         restaurant = Restaurant(
             mid_price=None if place_map['mid_price'] == "нет" else place_map['mid_price'],
             business_lunch=place_map['business_lunch'] == "да",
@@ -177,7 +177,7 @@ async def place_approve(message: Message, bot: AsyncTeleBot):
 
 
 async def push_place(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    await functions.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     user_id = str(call.from_user.id)
     states.set_state(PlaceStates.Approve, user_id)
     files = values.get_files(user_id)

@@ -28,6 +28,7 @@ places_collection = 'places'
 users_collection = 'users'
 admins_collection = 'admins'
 posts_collection = 'posts'
+statistics_collection = 'statistics'
 support = 'https://t.me/durahan'
 username = "dAKB4phxFx"
 password = "EIamC1W3jw"

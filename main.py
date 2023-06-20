@@ -9,7 +9,10 @@ from tgbot import config
 import logging
 
 
-logging.basicConfig(filename='db.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
+logging.basicConfig(filename='db.log',
+                    filemode='w',
+                    format='%(name)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.INFO)
 bot = AsyncTeleBot(config.TOKEN)
 

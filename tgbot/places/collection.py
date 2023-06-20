@@ -37,13 +37,20 @@ class PlaceCollection(Database):
             q['place.kitchens'] = {"$in": kitchens}
 
         if filters.get('mid_price') is not None:
-            if int(filters['mid_price']) <= 5000:
-                q['mid_price'] = {"$lte": int(filters['mid_price'])}
-            else:
-                q['mid_price'] = {"$gte": int(filters['mid_price'])}
+            q['place.mid_price'] = {"$gte": int(filters['mid_price'])}
+        else:
+            q['place.mid_price'] = {"$gte": 400}
 
-        if filters.get('raring') is not None:
-            q['raring'] = {"$gte": float(filters['raring'])}
+        if filters.get('rating') is not None:
+            q['place.rating'] = {"$gte": float(filters['rating'])}
+        else:
+            q['place.rating'] = {"$gte": 4.0}
+
+        place_types = values.get_list('place_types', user_id)
+        if place_types:
+            q['place_types'] = {"$in": place_types}
+        else:
+            q['place_types'] = {"$in": ["restaurant", "cafe"]}
 
         res_q = self.collection.find(q, skip=skip, limit=limit, )
         res = []

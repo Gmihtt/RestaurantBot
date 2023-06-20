@@ -16,6 +16,8 @@ from tgbot.config import max_distance
 
 
 async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
+    await functions.delete_old_msg(message.chat.id, bot)
+
     user_id = str(message.from_user.id)
 
     message_id = values.get_value('loc_msg', user_id)
@@ -30,12 +32,8 @@ async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
         longitude=longitude,
         latitude=latitude
     )
-    places = place_collection.find_close_place(crds, user_id, skip=0, limit=0)
 
-    count = 0
-    for place in places:
-        if count_distance(crds, place['coordinates']) <= max_distance:
-            count += 1
+    count = functions.count_relevant_places(user_id, crds)
 
     position = {
         "skip": '0',
@@ -47,7 +45,7 @@ async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
     values.set_value('places', "location", str(user_id))
 
     if count == 0:
-        text = "Под ваши фильтры не найдено заведений, либо Ваш город не поддерживается.\n" \
+        text = "Под твои фильтры не найдено заведений, либо твой город не доступен для поиска.\n" \
                "Продолжить поиск без фильтров или изменить фильтры?"
         await bot.send_message(
             chat_id=message.chat.id,
@@ -122,6 +120,10 @@ async def delete_place_message(call: CallbackQuery, bot: AsyncTeleBot):
         await functions.delete_message(call.message.chat.id, int(d['site_id']), bot)
         values.delete_value_from_map('place_map', 'site_id', user_id)
 
+    if d.get("favorite_add_id") is not None:
+        await functions.delete_message(call.message.chat.id, int(d['favorite_add_id']), bot)
+        values.delete_value_from_map('place_map', 'favorite_add_id', user_id)
+
 
 async def show_drop_filters(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
@@ -180,14 +182,16 @@ async def show_places(
         city = places[0]['city']
         user_collection.set_city(int(user_id), city)
 
-    text = f"""Я нашел {count} заведений вокруг твоей точки!\n
-Выбирай понравившееся заведение и нажимай на кнопку с его названием"""
+    text = f"Я нашёл {count} заведений рядом с тобой.\n" \
+           f"Просто выбирай желаемое место и нажимай на его название.\n"
+
     text_filters = await show_filters(user_id)
     text += text_filters
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=keyboards.show_places(crds, places, start, last)
+        reply_markup=keyboards.show_places(crds, places, start, last),
+        parse_mode="html"
     )
     new_show = {'skip': str(skip)}
     values.add_values_to_map('place_map', new_show, user_id)
@@ -213,15 +217,25 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
 
     favorite = place_id in user['favorites']
 
+    position = values.get_all_values_from_map('place_map', user_id)
+    loc = position['location']
+    new_loc = loc.split(",")
+    crds1 = Coordinates(
+        longitude=float(new_loc[0]),
+        latitude=float(new_loc[1])
+    )
+    distance = count_distance(crds1, place['coordinates'])
+
     message = await bot.send_message(
         chat_id=call.message.chat.id,
-        text=pretty_show_place(place),
+        text=pretty_show_place(place, distance),
         reply_markup=keyboards.show_place(
             place_id=place_id,
             phone=place['phone'] is not None,
             site=place['url'] is not None,
             favorite=favorite
-        )
+        ),
+        parse_mode="html"
     )
 
     user_collection.set_last_activity(int(user_id))
@@ -235,10 +249,18 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    chat_id = call.message.chat.id
     d = values.get_all_values_from_map('place_map', user_id)
+
+    if d.get("location_id") is not None:
+        await functions.delete_message(chat_id=chat_id,
+                                       msg_id=int(d["location_id"]),
+                                       bot=bot
+                                       )
+
     place = place_collection.find_place_by_id(d['place_id'])
     location = place['coordinates']
-    message = await bot.send_location(chat_id=call.message.chat.id,
+    message = await bot.send_location(chat_id=chat_id,
                                       longitude=location['longitude'],
                                       latitude=location['latitude'])
     values.add_values_to_map('place_map', {"location_id": str(message.id)}, user_id)
@@ -246,16 +268,32 @@ async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
 
 async def send_phone(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    chat_id = call.message.chat.id
     d = values.get_all_values_from_map('place_map', user_id)
+
+    if d.get("phone_id") is not None:
+        await functions.delete_message(chat_id=chat_id,
+                                       msg_id=int(d["phone_id"]),
+                                       bot=bot
+                                       )
+
     place = place_collection.find_place_by_id(d['place_id'])
     phone = place['phone'].replace(' ', '')
-    message = await bot.send_message(chat_id=call.message.chat.id, text=phone)
+    message = await bot.send_message(chat_id=chat_id, text=phone)
     values.add_values_to_map('place_map', {"phone_id": str(message.id)}, user_id)
 
 
 async def send_site(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = str(call.from_user.id)
+    chat_id = call.message.chat.id
     d = values.get_all_values_from_map('place_map', user_id)
+
+    if d.get("site_id") is not None:
+        await functions.delete_message(chat_id=chat_id,
+                                       msg_id=int(d["site_id"]),
+                                       bot=bot
+                                       )
+
     place = place_collection.find_place_by_id(d['place_id'])
     site = place['url']
     message = await bot.send_message(chat_id=call.message.chat.id, text=site)
@@ -282,13 +320,15 @@ async def show_favorite_places(call: CallbackQuery, bot: AsyncTeleBot):
             pos = call.data[len("prev"):]
 
     await bot.send_message(chat_id=call.message.chat.id,
-                           text="Это ваши избранные места",
+                           text="Это твои избранные места!",
                            reply_markup=keyboards.show_favorite_places(places, int(pos)))
 
 
 async def favorite_change(call: CallbackQuery, bot: AsyncTeleBot):
     user_id = call.from_user.id
+    chat_id = call.message.chat.id
     states.set_state(PlaceStates.FavoriteDelete, str(user_id))
+    d = values.get_all_values_from_map('place_map', str(user_id))
 
     if call.data.find("delete_yes") != -1:
         user = user_collection.get_user_by_tg_id(user_id)
@@ -302,9 +342,9 @@ async def favorite_change(call: CallbackQuery, bot: AsyncTeleBot):
         await show_cur(call, bot)
 
     if call.data.find("favorite_delete") != -1:
-        await functions.delete_message(call.message.chat.id, call.message.id, bot)
+        await functions.delete_message(chat_id, call.message.id, bot)
         place_id = call.data[len("favorite_delete"):]
-        await bot.send_message(chat_id=call.message.chat.id,
+        await bot.send_message(chat_id=chat_id,
                                text="Ты точно хочешь удалить это место из избранного?",
                                reply_markup=keyboards.favorite_delete_approve(place_id))
 
@@ -317,3 +357,16 @@ async def favorite_change(call: CallbackQuery, bot: AsyncTeleBot):
         await delete_place_message(call, bot)
         call.data = "place_id" + place_id
         await show_place(call, bot)
+
+        if d.get("favorite_add_id") is not None:
+            await functions.delete_message(chat_id=chat_id,
+                                           msg_id=int(d["favorite_add_id"]),
+                                           bot=bot
+                                           )
+
+        message = await bot.send_message(
+            chat_id=call.message.chat.id,
+            text="Теперь ты всегда сможешь найти это место в <b><i>Избранное</i></b> в главном меню!",
+            parse_mode="html"
+        )
+        values.add_values_to_map('place_map', {"favorite_add_id": str(message.id)}, str(user_id))

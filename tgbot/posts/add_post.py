@@ -16,7 +16,7 @@ from tgbot.utils.functions import parse_file, send_files
 async def post_name_message(call: CallbackQuery, bot: AsyncTeleBot):
     if call.message is None:
         raise Exception("callback message is None")
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id)
     user_id = str(call.from_user.id)
     states.set_state(PostStates.Name, user_id)
     await bot.send_message(chat_id=call.message.chat.id, text="""Пришли мне название поста""")
@@ -48,7 +48,7 @@ async def add_post_body(message: Message, bot: AsyncTeleBot):
 
 
 async def post_file_message(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id)
     await bot.send_message(chat_id=call.message.chat.id,
                            text="""Отправь мне до 10 фото, которые хотите добавить к посту""")
 
@@ -58,7 +58,7 @@ async def add_post_file(message: Message, bot: AsyncTeleBot):
 
 
 async def approve_post_message(call: CallbackQuery, bot: AsyncTeleBot):
-    await bot.delete_message(call.message.chat.id, call.message.id)
+    await functions.delete_message(call.message.chat.id, call.message.id)
     user_id = str(call.from_user.id)
     states.set_state(PostStates.Approve, user_id)
     chat_id = call.message.chat.id

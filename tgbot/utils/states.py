@@ -28,9 +28,9 @@ def get_state(user_id: str) -> States:
     if val is None:
         set_state(IntroStates.Welcome, user_id)
         return IntroStates.Welcome
-    if val.find("place") != -1:
-        return PlaceStates(val[len("place"):])
     if val.find("intro") != -1:
         return IntroStates(val[len("intro"):])
+    if val.find("place") != -1:
+        return PlaceStates(val[len("place"):])
     if val.find("post") != -1:
         return PostStates(val[len("post"):])
