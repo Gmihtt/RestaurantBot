@@ -58,7 +58,6 @@ def pretty_show_place(place: Place, distance: Optional[float]) -> str:
     dist = ""
     if distance is not None:
         dist = "Расстояние до места: <i>"
-        print(distance)
         if distance < 1:
             distance = int(round(distance, 4) * 1000)
             dist += create_metre_str(distance) + "</i>\n"

@@ -15,6 +15,8 @@ class PlaceType(StrEnum):
     Bar = "bar"
     Cafe = "cafe"
     Lounge = "lounge"
+    Bakery = "bakery"
+    Coffee = "coffee_house"
 
 
 class Restaurant(TypedDict):

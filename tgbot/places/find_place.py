@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from telebot.async_telebot import AsyncTeleBot
@@ -9,6 +10,7 @@ from tgbot.places import keyboards
 from tgbot.places.collection import place_collection
 from tgbot.places.place import Coordinates
 from tgbot.places.pretty_show import pretty_show_place
+from tgbot.texts import error_case
 from tgbot.utils.functions import send_files, count_distance
 from tgbot.places.states import PlaceStates
 from tgbot.utils import states, values, functions
@@ -199,52 +201,68 @@ async def show_places(
 
 async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
     await functions.delete_message(call.message.chat.id, call.message.id, bot)
-    place_id = call.data[len("place_id"):]
-    place = place_collection.find_place_by_id(place_id)
-    user_id = str(call.from_user.id)
-    states.set_state(PlaceStates.ShowPlace, user_id)
-    if len(place['files']) != 0:
-        file = await send_files(text="",
-                                chat_id=call.message.chat.id,
-                                files=place['files'],
-                                bot=bot)
-        if type(file) is list:
-            for f in file:
-                values.add_value_to_list('file_ids', str(f.id), user_id)
-        else:
-            values.add_value_to_list('file_ids', str(file.id), user_id)
-    user = user_collection.get_user_by_tg_id(int(user_id))
+    try:
+        place_id = call.data[len("place_id"):]
+        place = place_collection.find_place_by_id(place_id)
+        user_id = str(call.from_user.id)
+        states.set_state(PlaceStates.ShowPlace, user_id)
+        if len(place['files']) != 0:
+            file = await send_files(text="",
+                                    chat_id=call.message.chat.id,
+                                    files=place['files'],
+                                    bot=bot)
+            if type(file) is list:
+                for f in file:
+                    values.add_value_to_list('file_ids', str(f.id), user_id)
+            else:
+                values.add_value_to_list('file_ids', str(file.id), user_id)
+        user = user_collection.get_user_by_tg_id(int(user_id))
 
-    favorite = place_id in user['favorites']
+        favorite = place_id in user['favorites']
 
-    position = values.get_all_values_from_map('place_map', user_id)
-    loc = position['location']
-    new_loc = loc.split(",")
-    crds1 = Coordinates(
-        longitude=float(new_loc[0]),
-        latitude=float(new_loc[1])
-    )
-    distance = count_distance(crds1, place['coordinates'])
+        position = values.get_all_values_from_map('place_map', user_id)
+        loc = position['location']
+        new_loc = loc.split(",")
+        crds1 = Coordinates(
+            longitude=float(new_loc[0]),
+            latitude=float(new_loc[1])
+        )
+        distance = count_distance(crds1, place['coordinates'])
 
-    message = await bot.send_message(
-        chat_id=call.message.chat.id,
-        text=pretty_show_place(place, distance),
-        reply_markup=keyboards.show_place(
-            place_id=place_id,
-            phone=place['phone'] is not None,
-            site=place['url'] is not None,
-            favorite=favorite
-        ),
-        parse_mode="html"
-    )
+        message = await bot.send_message(
+            chat_id=call.message.chat.id,
+            text=pretty_show_place(place, distance),
+            reply_markup=keyboards.show_place(
+                place_id=place_id,
+                phone=place['phone'] is not None,
+                site=place['url'] is not None,
+                favorite=favorite
+            ),
+            parse_mode="html"
+        )
 
-    user_collection.set_last_activity(int(user_id))
+        user_collection.set_last_activity(int(user_id))
 
-    message_info = {
-        "message_id": message.id,
-        "place_id": place_id
-    }
-    values.add_values_to_map('place_map', message_info, user_id)
+        message_info = {
+            "message_id": message.id,
+            "place_id": place_id
+        }
+        values.add_values_to_map('place_map', message_info, user_id)
+    except Exception as exp:
+        place_id = call.data[len("place_id"):]
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"place_id: {place_id}\n"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
