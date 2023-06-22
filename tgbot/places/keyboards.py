@@ -62,7 +62,6 @@ def show_place(place_id: str,
                phone: bool,
                site: bool,
                favorite: bool) -> InlineKeyboardMarkup:
-    print(place_id, phone, site, favorite)
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("Показать на карте", callback_data="place_position"))
     if phone:
@@ -74,7 +73,6 @@ def show_place(place_id: str,
     if not favorite:
         markup.add(InlineKeyboardButton("Добавить в избранное", callback_data="favorite_add" + place_id))
     markup.add(InlineKeyboardButton("Назад", callback_data="places_cur"))
-    print("success")
     return markup
 
 

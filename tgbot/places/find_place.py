@@ -222,7 +222,7 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
         favorite = False
         if user is not None:
             favorite = user.get('favorites') is not None and place_id in user.get('favorites')
-        print("ГОВНО1")
+
         position = values.get_all_values_from_map('place_map', user_id)
         loc = position['location']
         new_loc = loc.split(",")
@@ -230,17 +230,9 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             longitude=float(new_loc[0]),
             latitude=float(new_loc[1])
         )
-        print("ГОВНО2")
+
         distance = count_distance(crds1, place['coordinates'])
-        print("ГОВНО3")
-        print(favorite, place_id, call.message.chat.id)
-        print(keyboards.show_place(
-                place_id=place_id,
-                phone=place.get('phone') is not None,
-                site=place.get('url') is not None,
-                favorite=favorite
-            ))
-        print("УЛЬТРА МЕГА ГОВНО")
+
         message = await bot.send_message(
             chat_id=call.message.chat.id,
             text=pretty_show_place(place, distance),
@@ -252,18 +244,18 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             ),
             parse_mode="html"
         )
-        print("ГОВНО4")
+
         if user is None:
             await save_user(user_id=int(user_id), chat_id=call.message.chat.id, username=call.from_user.username, code=None)
             user_collection.set_last_activity(int(user_id))
         else:
             user_collection.set_last_activity(int(user_id))
-        print("ГОВНО5")
+
         message_info = {
             "message_id": message.id,
             "place_id": place_id
         }
-        print("ГОВНО6")
+
         values.add_values_to_map('place_map', message_info, user_id)
     except Exception as exp:
         place_id = call.data[len("place_id"):]
