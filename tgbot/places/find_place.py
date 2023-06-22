@@ -5,7 +5,7 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery, Message
 
 from tgbot.introduction.collection import user_collection
-from tgbot.introduction.intro import show_filters
+from tgbot.introduction.intro import show_filters, save_user
 from tgbot.places import keyboards
 from tgbot.places.collection import place_collection
 from tgbot.places.place import Coordinates
@@ -242,8 +242,11 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             ),
             parse_mode="html"
         )
-
-        user_collection.set_last_activity(int(user_id))
+        if user is None:
+            await save_user(user_id=int(user_id), chat_id=call.message.chat.id, username=call.from_user.username, code=None)
+            user_collection.set_last_activity(int(user_id))
+        else:
+            user_collection.set_last_activity(int(user_id))
 
         message_info = {
             "message_id": message.id,
