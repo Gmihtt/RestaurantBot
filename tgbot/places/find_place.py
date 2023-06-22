@@ -242,6 +242,7 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
                 site=place('url') is not None,
                 favorite=favorite
             ))
+        print("УЛЬТРА МЕГА ГОВНО")
         message = await bot.send_message(
             chat_id=call.message.chat.id,
             text=pretty_show_place(place, distance),
