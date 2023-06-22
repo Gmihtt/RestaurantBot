@@ -218,7 +218,7 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
                 values.add_value_to_list('file_ids', str(file.id), user_id)
         user = user_collection.get_user_by_tg_id(int(user_id))
 
-        favorite = place_id in user['favorites']
+        favorite = user.get('favorites') is not None and place_id in user.get('favorites')
 
         position = values.get_all_values_from_map('place_map', user_id)
         loc = position['location']
@@ -234,8 +234,8 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             text=pretty_show_place(place, distance),
             reply_markup=keyboards.show_place(
                 place_id=place_id,
-                phone=place['phone'] is not None,
-                site=place['url'] is not None,
+                phone=place.get('phone') is not None,
+                site=place('url') is not None,
                 favorite=favorite
             ),
             parse_mode="html"

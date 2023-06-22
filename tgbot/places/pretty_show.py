@@ -24,7 +24,7 @@ def pretty_show_restaurant(rest: Restaurant) -> str:
                     kitchen += k + ', '
         kitchen += '</i>\n\n'
     vegan = ""
-    if rest['vegan']:
+    if rest.get('vegan') is not None and rest.get('vegan'):
         vegan = 'Веганская еда: <i>Да</i>' + '\n'
     business = ""
     if "Бизнес-ланч" in rest['features']:
@@ -47,7 +47,7 @@ def pretty_show_place(place: Place, distance: Optional[float]) -> str:
     name = '<b>' + place['name'] + '</b>\n\n'
 
     place_types = ""
-    if place['place_types']:
+    if place.get('place_types') is not None and place.get('place_types') != []:
         place_types = "Тип заведения: <i>"
         for i, p_t in enumerate(place['place_types']):
             place_types += pretty_show_place_type(PlaceType(p_t))
