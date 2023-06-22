@@ -233,13 +233,11 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
         print("ГОВНО2")
         distance = count_distance(crds1, place['coordinates'])
         print("ГОВНО3")
-        print(pretty_show_place(place, distance))
         print(favorite, place_id, call.message.chat.id)
-        print(place)
         print(keyboards.show_place(
                 place_id=place_id,
                 phone=place.get('phone') is not None,
-                site=place('url') is not None,
+                site=place.get('url') is not None,
                 favorite=favorite
             ))
         print("УЛЬТРА МЕГА ГОВНО")
@@ -249,7 +247,7 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
             reply_markup=keyboards.show_place(
                 place_id=place_id,
                 phone=place.get('phone') is not None,
-                site=place('url') is not None,
+                site=place.get('url') is not None,
                 favorite=favorite
             ),
             parse_mode="html"
