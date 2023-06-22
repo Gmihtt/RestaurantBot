@@ -218,7 +218,9 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
                 values.add_value_to_list('file_ids', str(file.id), user_id)
         user = user_collection.get_user_by_tg_id(int(user_id))
 
-        favorite = user.get('favorites') is not None and place_id in user.get('favorites')
+        favorite = False
+        if user is not None:
+            favorite = user.get('favorites') is not None and place_id in user.get('favorites')
 
         position = values.get_all_values_from_map('place_map', user_id)
         loc = position['location']
