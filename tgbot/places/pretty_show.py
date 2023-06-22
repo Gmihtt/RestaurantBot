@@ -109,3 +109,7 @@ def pretty_show_place_type(p_t: PlaceType):
         return "Кафе"
     if p_t == PlaceType.Lounge:
         return "Lounge-Бар"
+    if p_t == PlaceType.Coffee:
+        return "Кофейня"
+    if p_t == PlaceType.Bakery:
+        return "Пекарня"

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Optional
 
@@ -72,6 +73,7 @@ async def welcome(
         reply_markup=keyboards.main_menu(favorites=u['favorites'] != []),
         parse_mode="html"
     )
+    logging.info(f"user start: {user_id}")
 
 
 async def save_user(user_id: int, chat_id: int, username: Optional[str], code: Optional[str] = None) -> User:

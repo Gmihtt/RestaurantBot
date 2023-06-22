@@ -182,6 +182,8 @@ def show_place_type():
     markup.add(InlineKeyboardButton('Бар', callback_data="bar"),
                InlineKeyboardButton('Ресторан', callback_data="restaurant"),
                InlineKeyboardButton('Кафе', callback_data="cafe"),
+               InlineKeyboardButton('Кофейни', callback_data="coffee_house"),
+               InlineKeyboardButton('Пекарни', callback_data="bakery"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
     markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))

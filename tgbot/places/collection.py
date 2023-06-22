@@ -50,7 +50,7 @@ class PlaceCollection(Database):
         if place_types:
             q['place_types'] = {"$in": place_types}
         else:
-            q['place_types'] = {"$in": ["restaurant", "cafe"]}
+            q['place_types'] = {"$in": ["restaurant", "cafe", "coffee_house"]}
 
         res_q = self.collection.find(q, skip=skip, limit=limit, )
         res = []
