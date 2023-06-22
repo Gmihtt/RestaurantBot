@@ -234,6 +234,8 @@ async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
         distance = count_distance(crds1, place['coordinates'])
         print("ГОВНО3")
         print(pretty_show_place(place, distance))
+        print(favorite, place_id)
+        print(place)
         message = await bot.send_message(
             chat_id=call.message.chat.id,
             text=pretty_show_place(place, distance),
