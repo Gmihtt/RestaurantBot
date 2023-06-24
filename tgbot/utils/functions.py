@@ -108,15 +108,15 @@ async def delete_old_msg(chat_id: int, bot: AsyncTeleBot):
 
 def create_metre_str(metre: int):
     if 11 <= metre % 100 <= 19:
-        return str(metre) + ' метров.'
+        return str(metre) + ' метров'
     if metre % 10 == 0:
-        return str(metre) + ' метров.'
+        return str(metre) + ' метров'
     if metre % 10 == 1:
-        return str(metre) + ' метр.'
+        return str(metre) + ' метр'
     if 2 <= metre % 10 <= 4:
-        return str(metre) + ' метра.'
+        return str(metre) + ' метра'
     if 5 <= metre % 10 <= 9:
-        return str(metre) + ' метров.'
+        return str(metre) + ' метров'
 
 
 def place_count_str(count: int):
