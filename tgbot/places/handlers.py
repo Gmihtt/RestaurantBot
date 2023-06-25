@@ -6,10 +6,11 @@ from tgbot.places.states import PlaceStates
 
 
 def place_handlers(bot: AsyncTeleBot):
-    edit_place_handlers(bot)
+    # edit_place_handlers(bot)
     find_place_handlers(bot)
 
 
+"""
 def edit_place_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(edit_place.place_search_message,
                                         func=lambda c: check_callback_text(c, "place"),
@@ -39,6 +40,7 @@ def edit_place_handlers(bot: AsyncTeleBot):
     bot.register_callback_query_handler(edit_place.push_place,
                                         func=lambda c: check_callback_text(c, "push_place"),
                                         pass_bot=True)
+"""
 
 
 def find_place_handlers(bot: AsyncTeleBot):

@@ -37,7 +37,7 @@ def filters(vegan: bool, business: bool, hookah: bool):
                row_width=2)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтры', callback_data="filters_drop"),
                InlineKeyboardButton('🔎 Перейти к поиску', callback_data="find_place"),
-               InlineKeyboardButton('⬅️ В меню', callback_data="main_menu"),
+               InlineKeyboardButton('🏠 В меню', callback_data="main_menu"),
                row_width=1)
     return markup
 
@@ -62,7 +62,7 @@ def show_kitchens(pos: int):
     else:
         markup.add(InlineKeyboardButton('⬅️', callback_data="back"), row_width=1)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтр', callback_data="drop", row_width=1))
-    markup.add(InlineKeyboardButton('⬅️ Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('⚙️ Вернуться к параметрам', callback_data="filters", row_width=1))
     return markup
 
 
@@ -87,7 +87,7 @@ def mid_price():
                InlineKeyboardButton('от 5000₽', callback_data="price_5000"),
                row_width=1)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтр', callback_data="drop", row_width=1))
-    markup.add(InlineKeyboardButton('⬅️ Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('⚙️ Вернуться к параметрам', callback_data="filters", row_width=1))
     return markup
 
 
@@ -100,7 +100,7 @@ def rating():
                InlineKeyboardButton('от 4.7', callback_data="rating_4.7"),
                row_width=1)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтр', callback_data="drop", row_width=1))
-    markup.add(InlineKeyboardButton('⬅️ Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('⚙️ Вернуться к параметрам', callback_data="filters", row_width=1))
     return markup
 
 
@@ -113,7 +113,7 @@ def find_place():
 
 def back_main_menu():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('⬅️ В меню', callback_data="main_menu"), row_width=1)
+    markup.add(InlineKeyboardButton('🏠️ В меню', callback_data="main_menu"), row_width=1)
     return markup
 
 
@@ -186,7 +186,7 @@ def show_place_type():
                InlineKeyboardButton('Пекарни', callback_data="bakery"),
                row_width=1)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтр', callback_data="drop", row_width=1))
-    markup.add(InlineKeyboardButton('⬅️ Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('⚙️ Вернуться к параметрам', callback_data="filters", row_width=1))
     return markup
 
 
@@ -195,5 +195,5 @@ def show_cities():
     for city in cities:
         markup.add(InlineKeyboardButton(city, callback_data=city), row_width=1)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтр', callback_data="drop", row_width=1))
-    markup.add(InlineKeyboardButton('⬅️ Вернуться к параметрам', callback_data="filters", row_width=1))
+    markup.add(InlineKeyboardButton('⚙️ Вернуться к параметрам', callback_data="filters", row_width=1))
     return markup
