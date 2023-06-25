@@ -53,7 +53,7 @@ def show_places(
         markup.add(InlineKeyboardButton('➡️', callback_data="places_next"), row_width=1)
     elif max_radius and not start:
         markup.add(InlineKeyboardButton('⬅️', callback_data="places_back"), row_width=1)
-    markup.add(InlineKeyboardButton('Сбросить фильтры', callback_data="filters_drop"))
+    markup.add(InlineKeyboardButton('🚮 Сбросить фильтры', callback_data="filters_drop"))
     markup.add(InlineKeyboardButton('В главное меню', callback_data="main_menu"))
     return markup
 
