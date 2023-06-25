@@ -15,12 +15,12 @@ class PlaceType(StrEnum):
     Bar = "bar"
     Cafe = "cafe"
     Lounge = "lounge"
+    Bakery = "bakery"
+    Coffee = "coffee_house"
 
 
 class Restaurant(TypedDict):
     mid_price: Optional[int]
-    business_lunch: Optional[bool]
-    business_lunch_price: Optional[int]
     kitchens: List[str]
     features: List[str]
     rating: Optional[float]
@@ -70,8 +70,6 @@ def convert_doc_to_place(d: Dict[str, Any]) -> Place:
         if d.get('place') is not None:
             restaurant = Restaurant(
                     mid_price=d['place'].get('mid_price'),
-                    business_lunch=d['place'].get('business_lunch'),
-                    business_lunch_price=d['place'].get('business_lunch_price'),
                     kitchens=d['place'].get('kitchens', []),
                     rating=d['place'].get('rating'),
                     vegan=d['place'].get('vegan'),

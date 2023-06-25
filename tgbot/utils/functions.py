@@ -108,15 +108,15 @@ async def delete_old_msg(chat_id: int, bot: AsyncTeleBot):
 
 def create_metre_str(metre: int):
     if 11 <= metre % 100 <= 19:
-        return str(metre) + ' метров.'
+        return str(metre) + ' метров'
     if metre % 10 == 0:
-        return str(metre) + ' метров.'
+        return str(metre) + ' метров'
     if metre % 10 == 1:
-        return str(metre) + ' метр.'
+        return str(metre) + ' метр'
     if 2 <= metre % 10 <= 4:
-        return str(metre) + ' метра.'
+        return str(metre) + ' метра'
     if 5 <= metre % 10 <= 9:
-        return str(metre) + ' метров.'
+        return str(metre) + ' метров'
 
 
 def place_count_str(count: int):
@@ -130,3 +130,12 @@ def place_count_str(count: int):
         return str(count) + ' заведения'
     if 5 <= count % 10 <= 9:
         return str(count) + ' заведений'
+
+
+def add_hookah_to_features():
+    places = place_collection.find_all_places()
+    for place in places:
+        if "lounge" in place['place_types'] and place.get('place') is not None:
+            if "Кальян-бар" not in place['place']['features']:
+                place['place']['features'].append("Кальян-бар")
+                place_collection.update_place(place)

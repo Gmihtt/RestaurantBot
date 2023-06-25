@@ -26,14 +26,14 @@ def filters(vegan: bool, business: bool, hookah: bool):
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Тип заведения', callback_data="place_types"),
                row_width=1)
-    markup.add(InlineKeyboardButton('Рейтинг заведения', callback_data="rating"),
-               InlineKeyboardButton('Веганские: ' + checker(vegan), callback_data="vegan"),
+    markup.add(InlineKeyboardButton('⭐️ Рейтинг заведения', callback_data="rating"),
+               InlineKeyboardButton('🥦 Веганские: ' + checker(vegan), callback_data="vegan"),
                row_width=2)
-    markup.add(InlineKeyboardButton('Кухня', callback_data="chose_kitchens"),
-               InlineKeyboardButton('Бизнес-ланч: ' + checker(business), callback_data="business"),
+    markup.add(InlineKeyboardButton('👨‍🍳 Кухня', callback_data="chose_kitchens"),
+               InlineKeyboardButton('💼 Бизнес-ланч: ' + checker(business), callback_data="business"),
                row_width=2)
-    markup.add(InlineKeyboardButton('Средний чек', callback_data="mid_price"),
-               InlineKeyboardButton('Кальян: ' + checker(hookah), callback_data="hookah"),
+    markup.add(InlineKeyboardButton('💵 Средний чек', callback_data="mid_price"),
+               InlineKeyboardButton('💨 Кальян: ' + checker(hookah), callback_data="hookah"),
                row_width=2)
     markup.add(InlineKeyboardButton('Сбросить фильтры', callback_data="filters_drop"),
                InlineKeyboardButton('Перейти к поиску', callback_data="find_place"),
@@ -71,7 +71,7 @@ def main_menu(favorites: bool):
     markup.add(InlineKeyboardButton('Найти место', callback_data="find_place"), row_width=1)
     markup.add(InlineKeyboardButton('Параметры поиска', callback_data="filters"), row_width=1)
     if favorites:
-        markup.add(InlineKeyboardButton('Избранное', callback_data="favorites"), row_width=1)
+        markup.add(InlineKeyboardButton('❤️Избранное', callback_data="favorites"), row_width=1)
     return markup
 
 
@@ -182,6 +182,8 @@ def show_place_type():
     markup.add(InlineKeyboardButton('Бар', callback_data="bar"),
                InlineKeyboardButton('Ресторан', callback_data="restaurant"),
                InlineKeyboardButton('Кафе', callback_data="cafe"),
+               InlineKeyboardButton('Кофейни', callback_data="coffee_house"),
+               InlineKeyboardButton('Пекарни', callback_data="bakery"),
                row_width=1)
     markup.add(InlineKeyboardButton('Вернуться к параметрам', callback_data="filters", row_width=1))
     markup.add(InlineKeyboardButton('Сбросить фильтр', callback_data="drop", row_width=1))

@@ -22,7 +22,8 @@ def get_places_types():
     return set(d['place_types'])
 
 
-TOKEN = '5997480587:AAHDMpfgj-sUXkjfnES_umWbLgQU1AR4H_s'
+#TOKEN = '5997480587:AAHDMpfgj-sUXkjfnES_umWbLgQU1AR4H_s' #bcdrestaurant
+TOKEN = '6117117878:AAGLU1bt1-fhiaQG9LHdbxeZxHUExTMFDf0'
 mongo_database = 'tgbot'
 places_collection = 'places'
 users_collection = 'users'

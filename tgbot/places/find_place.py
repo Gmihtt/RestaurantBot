@@ -1,64 +1,82 @@
+import logging
+import traceback
 from typing import Optional
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery, Message
 
 from tgbot.introduction.collection import user_collection
-from tgbot.introduction.intro import show_filters
+from tgbot.introduction.intro import show_filters, save_user
 from tgbot.places import keyboards
 from tgbot.places.collection import place_collection
 from tgbot.places.place import Coordinates
 from tgbot.places.pretty_show import pretty_show_place
-from tgbot.utils.functions import send_files, count_distance
+from tgbot.texts import error_case
+from tgbot.utils.functions import send_files, count_distance, place_count_str
 from tgbot.places.states import PlaceStates
 from tgbot.utils import states, values, functions
 from tgbot.config import max_distance
 
 
 async def show_places_by_coordinates(message: Message, bot: AsyncTeleBot):
-    await functions.delete_old_msg(message.chat.id, bot)
+    try:
+        await functions.delete_old_msg(message.chat.id, bot)
 
-    user_id = str(message.from_user.id)
+        user_id = str(message.from_user.id)
 
-    message_id = values.get_value('loc_msg', user_id)
-    if message_id is not None:
-        await functions.delete_message(message.chat.id, int(message_id), bot)
-    values.delete_value('loc_msg', user_id)
+        message_id = values.get_value('loc_msg', user_id)
+        if message_id is not None:
+            await functions.delete_message(message.chat.id, int(message_id), bot)
+        values.delete_value('loc_msg', user_id)
 
-    longitude = message.location.longitude
-    latitude = message.location.latitude
-    loc = "{0},{1}".format(longitude, latitude)
-    crds = Coordinates(
-        longitude=longitude,
-        latitude=latitude
-    )
-
-    count = functions.count_relevant_places(user_id, crds)
-
-    position = {
-        "skip": '0',
-        "location": loc,
-        "count": str(count)
-    }
-    values.add_values_to_map('place_map', position, user_id)
-
-    values.set_value('places', "location", str(user_id))
-
-    if count == 0:
-        text = "Под твои фильтры не найдено заведений, либо твой город не доступен для поиска.\n" \
-               "Продолжить поиск без фильтров или изменить фильтры?"
-        await bot.send_message(
-            chat_id=message.chat.id,
-            text=text,
-            reply_markup=keyboards.not_found()
+        longitude = message.location.longitude
+        latitude = message.location.latitude
+        loc = "{0},{1}".format(longitude, latitude)
+        crds = Coordinates(
+            longitude=longitude,
+            latitude=latitude
         )
-    else:
-        await show_places(
-            message.chat.id,
-            str(message.from_user.id),
-            None,
-            bot
-        )
+
+        count = functions.count_relevant_places(user_id, crds)
+
+        position = {
+            "skip": '0',
+            "location": loc,
+            "count": str(count)
+        }
+        values.add_values_to_map('place_map', position, user_id)
+
+        values.set_value('places', "location", str(user_id))
+
+        if count == 0:
+            text = "Под твои фильтры не найдено заведений, либо твой город не доступен для поиска.\n" \
+                   "Продолжить поиск без фильтров или изменить фильтры?"
+            await bot.send_message(
+                chat_id=message.chat.id,
+                text=text,
+                reply_markup=keyboards.not_found()
+            )
+        else:
+            await show_places(
+                message.chat.id,
+                str(message.from_user.id),
+                None,
+                bot
+            )
+    except Exception as exp:
+        user_id = str(message.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {message}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def show_next(call: CallbackQuery, bot: AsyncTeleBot):
@@ -82,75 +100,120 @@ async def show_back(call: CallbackQuery, bot: AsyncTeleBot):
 
 
 async def show_cur(call: CallbackQuery, bot: AsyncTeleBot):
-    await delete_place_message(call, bot)
+    try:
+        await delete_place_message(call, bot)
 
-    user_id = str(call.from_user.id)
+        user_id = str(call.from_user.id)
 
-    places_types = values.get_value('places', user_id)
+        places_types = values.get_value('places', user_id)
 
-    if places_types == "location":
-        await show_places(
-            call.message.chat.id,
-            str(call.from_user.id),
-            call.message.id,
-            bot,
-        )
-    else:
-        await show_favorite_places(call, bot)
+        if places_types == "location":
+            await show_places(
+                call.message.chat.id,
+                str(call.from_user.id),
+                call.message.id,
+                bot,
+            )
+        else:
+            await show_favorite_places(call, bot)
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def delete_place_message(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    d = values.get_all_values_from_map('place_map', user_id)
+    try:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
 
-    file_ids = values.get_list('file_ids', user_id)
-    for file_id in file_ids:
-        await functions.delete_message(call.message.chat.id, int(file_id), bot)
-    values.delete_list('file_ids', user_id)
+        file_ids = values.get_list('file_ids', user_id)
+        for file_id in file_ids:
+            await functions.delete_message(call.message.chat.id, int(file_id), bot)
+        values.delete_list('file_ids', user_id)
 
-    if d.get('location_id') is not None:
-        await functions.delete_message(call.message.chat.id, int(d['location_id']), bot)
-        values.delete_value_from_map('place_map', 'location_id', user_id)
+        if d.get('location_id') is not None:
+            await functions.delete_message(call.message.chat.id, int(d['location_id']), bot)
+            values.delete_value_from_map('place_map', 'location_id', user_id)
 
-    if d.get('phone_id') is not None:
-        await functions.delete_message(call.message.chat.id, int(d['phone_id']), bot)
-        values.delete_value_from_map('place_map', 'phone_id', user_id)
+        if d.get('phone_id') is not None:
+            await functions.delete_message(call.message.chat.id, int(d['phone_id']), bot)
+            values.delete_value_from_map('place_map', 'phone_id', user_id)
 
-    if d.get('site_id') is not None:
-        await functions.delete_message(call.message.chat.id, int(d['site_id']), bot)
-        values.delete_value_from_map('place_map', 'site_id', user_id)
+        if d.get('site_id') is not None:
+            await functions.delete_message(call.message.chat.id, int(d['site_id']), bot)
+            values.delete_value_from_map('place_map', 'site_id', user_id)
 
-    if d.get("favorite_add_id") is not None:
-        await functions.delete_message(call.message.chat.id, int(d['favorite_add_id']), bot)
-        values.delete_value_from_map('place_map', 'favorite_add_id', user_id)
+        if d.get("favorite_add_id") is not None:
+            await functions.delete_message(call.message.chat.id, int(d['favorite_add_id']), bot)
+            values.delete_value_from_map('place_map', 'favorite_add_id', user_id)
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def show_drop_filters(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    values.clean_map('filters_map', user_id)
-    values.delete_list('kitchens', user_id)
+    try:
+        user_id = str(call.from_user.id)
+        values.clean_map('filters_map', user_id)
+        values.delete_list('kitchens', user_id)
 
-    position = values.get_all_values_from_map('place_map', user_id)
-    loc = position['location']
-    new_loc = loc.split(",")
-    crds = Coordinates(
-        longitude=float(new_loc[0]),
-        latitude=float(new_loc[1])
-    )
-    places = place_collection.find_close_place(crds, user_id, skip=0, limit=0)
-    count = 0
-    for place in places:
-        if count_distance(crds, place['coordinates']) <= max_distance:
-            count += 1
+        position = values.get_all_values_from_map('place_map', user_id)
+        loc = position['location']
+        new_loc = loc.split(",")
+        crds = Coordinates(
+            longitude=float(new_loc[0]),
+            latitude=float(new_loc[1])
+        )
+        places = place_collection.find_close_place(crds, user_id, skip=0, limit=0)
+        count = 0
+        for place in places:
+            if count_distance(crds, place['coordinates']) <= max_distance:
+                count += 1
 
-    values.add_values_to_map('place_map', {'count': str(count)}, user_id)
+        values.add_values_to_map('place_map', {'count': str(count)}, user_id)
 
-    await show_places(
-        call.message.chat.id,
-        str(user_id),
-        call.message.id,
-        bot,
-    )
+        await show_places(
+            call.message.chat.id,
+            str(user_id),
+            call.message.id,
+            bot,
+        )
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def show_places(
@@ -159,214 +222,367 @@ async def show_places(
         message_id: Optional[int],
         bot: AsyncTeleBot,
         pred: Optional[bool] = None):
-    await functions.delete_message(chat_id, message_id, bot)
+    if message_id is not None:
+        await functions.delete_message(chat_id, message_id, bot)
+    try:
+        states.set_state(PlaceStates.ShowPlaces, user_id)
+        position = values.get_all_values_from_map('place_map', user_id)
+        skip = int(position['skip'])
+        loc = position['location']
+        count = position['count']
+        new_loc = loc.split(",")
+        crds = Coordinates(
+            longitude=float(new_loc[0]),
+            latitude=float(new_loc[1])
+        )
 
-    states.set_state(PlaceStates.ShowPlaces, user_id)
-    position = values.get_all_values_from_map('place_map', user_id)
-    skip = int(position['skip'])
-    loc = position['location']
-    count = position['count']
-    new_loc = loc.split(",")
-    crds = Coordinates(
-        longitude=float(new_loc[0]),
-        latitude=float(new_loc[1])
-    )
+        if pred is not None:
+            skip = skip + 5 if pred else skip - 5
+        start = skip == 0
+        last = int(count) <= skip + 5
+        places = place_collection.find_close_place(crds, user_id, skip=skip)
 
-    if pred is not None:
-        skip = skip + 5 if pred else skip - 5
-    start = skip == 0
-    last = int(count) <= skip + 5
-    places = place_collection.find_close_place(crds, user_id, skip=skip)
+        if start:
+            city = places[0]['city']
+            user_collection.set_city(int(user_id), city)
 
-    if start:
-        city = places[0]['city']
-        user_collection.set_city(int(user_id), city)
+        russian_text = place_count_str(int(count))
+        text = f"Я нашёл {russian_text} рядом с тобой.\n" \
+               f"Просто выбирай желаемое место и нажимай на его название.\n"
 
-    text = f"Я нашёл {count} заведений рядом с тобой.\n" \
-           f"Просто выбирай желаемое место и нажимай на его название.\n"
-
-    text_filters = await show_filters(user_id)
-    text += text_filters
-    await bot.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_markup=keyboards.show_places(crds, places, start, last),
-        parse_mode="html"
-    )
-    new_show = {'skip': str(skip)}
-    values.add_values_to_map('place_map', new_show, user_id)
+        text_filters = await show_filters(user_id)
+        text += text_filters
+        await bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=keyboards.show_places(crds, places, start, last),
+            parse_mode="html"
+        )
+        new_show = {'skip': str(skip)}
+        values.add_values_to_map('place_map', new_show, user_id)
+    except Exception as exp:
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=chat_id,
+                               parse_mode="html"
+                               )
 
 
 async def show_place(call: CallbackQuery, bot: AsyncTeleBot):
     await functions.delete_message(call.message.chat.id, call.message.id, bot)
-    place_id = call.data[len("place_id"):]
-    place = place_collection.find_place_by_id(place_id)
-    user_id = str(call.from_user.id)
-    states.set_state(PlaceStates.ShowPlace, user_id)
-    if len(place['files']) != 0:
-        file = await send_files(text="",
-                                chat_id=call.message.chat.id,
-                                files=place['files'],
-                                bot=bot)
-        if type(file) is list:
-            for f in file:
-                values.add_value_to_list('file_ids', str(f.id), user_id)
+    try:
+        place_id = call.data[len("place_id"):]
+        place = place_collection.find_place_by_id(place_id)
+
+        if place is None:
+            raise Exception(f"place is None for place_id: {place_id}")
+
+        user_id = str(call.from_user.id)
+        states.set_state(PlaceStates.ShowPlace, user_id)
+        if len(place['files']) != 0:
+            file = await send_files(text="",
+                                    chat_id=call.message.chat.id,
+                                    files=place['files'],
+                                    bot=bot)
+            if type(file) is list:
+                for f in file:
+                    values.add_value_to_list('file_ids', str(f.id), user_id)
+            else:
+                values.add_value_to_list('file_ids', str(file.id), user_id)
+        user = user_collection.get_user_by_tg_id(int(user_id))
+
+        favorite = False
+        if user is not None and user.get('favorites') is not None:
+            favorite = place_id in user['favorites']
+
+        position = values.get_all_values_from_map('place_map', user_id)
+        loc = position['location']
+        new_loc = loc.split(",")
+        crds1 = Coordinates(
+            longitude=float(new_loc[0]),
+            latitude=float(new_loc[1])
+        )
+
+        distance = count_distance(crds1, place['coordinates'])
+
+        message = await bot.send_message(
+            chat_id=call.message.chat.id,
+            text=pretty_show_place(place, distance),
+            reply_markup=keyboards.show_place(
+                place_id=place_id,
+                phone=place.get('phone') is not None,
+                site=place.get('url') is not None,
+                favorite=favorite
+            ),
+            parse_mode="html"
+        )
+
+        if user is None:
+            await save_user(
+                user_id=int(user_id),
+                chat_id=call.message.chat.id,
+                username=call.from_user.username,
+                code=None
+            )
+            user_collection.set_last_activity(int(user_id))
         else:
-            values.add_value_to_list('file_ids', str(file.id), user_id)
-    user = user_collection.get_user_by_tg_id(int(user_id))
+            user_collection.set_last_activity(int(user_id))
 
-    favorite = place_id in user['favorites']
+        message_info = {
+            "message_id": message.id,
+            "place_id": place_id
+        }
 
-    position = values.get_all_values_from_map('place_map', user_id)
-    loc = position['location']
-    new_loc = loc.split(",")
-    crds1 = Coordinates(
-        longitude=float(new_loc[0]),
-        latitude=float(new_loc[1])
-    )
-    distance = count_distance(crds1, place['coordinates'])
-
-    message = await bot.send_message(
-        chat_id=call.message.chat.id,
-        text=pretty_show_place(place, distance),
-        reply_markup=keyboards.show_place(
-            place_id=place_id,
-            phone=place['phone'] is not None,
-            site=place['url'] is not None,
-            favorite=favorite
-        ),
-        parse_mode="html"
-    )
-
-    user_collection.set_last_activity(int(user_id))
-
-    message_info = {
-        "message_id": message.id,
-        "place_id": place_id
-    }
-    values.add_values_to_map('place_map', message_info, user_id)
+        values.add_values_to_map('place_map', message_info, user_id)
+    except Exception as exp:
+        place_id = call.data[len("place_id"):]
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"place_id: {place_id}\n"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def send_location(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    chat_id = call.message.chat.id
-    d = values.get_all_values_from_map('place_map', user_id)
+    try:
+        user_id = str(call.from_user.id)
+        chat_id = call.message.chat.id
+        d = values.get_all_values_from_map('place_map', user_id)
 
-    if d.get("location_id") is not None:
-        await functions.delete_message(chat_id=chat_id,
-                                       msg_id=int(d["location_id"]),
-                                       bot=bot
-                                       )
+        if d.get("location_id") is not None:
+            await functions.delete_message(chat_id=chat_id,
+                                           msg_id=int(d["location_id"]),
+                                           bot=bot
+                                           )
 
-    place = place_collection.find_place_by_id(d['place_id'])
-    location = place['coordinates']
-    message = await bot.send_location(chat_id=chat_id,
-                                      longitude=location['longitude'],
-                                      latitude=location['latitude'])
-    values.add_values_to_map('place_map', {"location_id": str(message.id)}, user_id)
+        place = place_collection.find_place_by_id(d['place_id'])
+
+        if place is None:
+            raise Exception(f"place is None for place_id: {d['place_id']}")
+
+        location = place['coordinates']
+        message = await bot.send_location(chat_id=chat_id,
+                                          longitude=location['longitude'],
+                                          latitude=location['latitude'])
+        values.add_values_to_map('place_map', {"location_id": str(message.id)}, user_id)
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def send_phone(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    chat_id = call.message.chat.id
-    d = values.get_all_values_from_map('place_map', user_id)
+    try:
+        user_id = str(call.from_user.id)
+        chat_id = call.message.chat.id
+        d = values.get_all_values_from_map('place_map', user_id)
 
-    if d.get("phone_id") is not None:
-        await functions.delete_message(chat_id=chat_id,
-                                       msg_id=int(d["phone_id"]),
-                                       bot=bot
-                                       )
+        if d.get("phone_id") is not None:
+            await functions.delete_message(chat_id=chat_id,
+                                           msg_id=int(d["phone_id"]),
+                                           bot=bot
+                                           )
 
-    place = place_collection.find_place_by_id(d['place_id'])
-    phone = place['phone'].replace(' ', '')
-    message = await bot.send_message(chat_id=chat_id, text=phone)
-    values.add_values_to_map('place_map', {"phone_id": str(message.id)}, user_id)
+        place = place_collection.find_place_by_id(d['place_id'])
+
+        if place is None:
+            raise Exception(f"place is None for place_id: {d['place_id']}")
+
+        if place.get('phone') is None:
+            raise Exception(f"place.phone is None for place_id: {d['place_id']}")
+
+        phone = place['phone'].replace(' ', '')
+        message = await bot.send_message(chat_id=chat_id, text=phone)
+        values.add_values_to_map('place_map', {"phone_id": str(message.id)}, user_id)
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def send_site(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = str(call.from_user.id)
-    chat_id = call.message.chat.id
-    d = values.get_all_values_from_map('place_map', user_id)
+    try:
+        user_id = str(call.from_user.id)
+        chat_id = call.message.chat.id
+        d = values.get_all_values_from_map('place_map', user_id)
 
-    if d.get("site_id") is not None:
-        await functions.delete_message(chat_id=chat_id,
-                                       msg_id=int(d["site_id"]),
-                                       bot=bot
-                                       )
+        if d.get("site_id") is not None:
+            await functions.delete_message(chat_id=chat_id,
+                                           msg_id=int(d["site_id"]),
+                                           bot=bot
+                                           )
 
-    place = place_collection.find_place_by_id(d['place_id'])
-    site = place['url']
-    message = await bot.send_message(chat_id=call.message.chat.id, text=site)
-    values.add_values_to_map('place_map', {"site_id": str(message.id)}, user_id)
+        place = place_collection.find_place_by_id(d['place_id'])
+
+        if place is None:
+            raise Exception(f"place is None for {d['place_id']}")
+
+        if place.get('url') is None:
+            raise Exception(f"place.url is None for {d['place_id']}")
+
+        site = place['url']
+        message = await bot.send_message(chat_id=call.message.chat.id, text=site)
+        values.add_values_to_map('place_map', {"site_id": str(message.id)}, user_id)
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def show_favorite_places(call: CallbackQuery, bot: AsyncTeleBot):
     await functions.delete_message(call.message.chat.id, call.message.id, bot)
-    user_id = str(call.from_user.id)
-    states.set_state(PlaceStates.FavoritePlaces, user_id)
-    pos = 0
+    try:
+        user_id = str(call.from_user.id)
+        states.set_state(PlaceStates.FavoritePlaces, user_id)
+        pos = 0
 
-    values.set_value('places', "favorite", str(user_id))
-    user = user_collection.get_user_by_tg_id(int(user_id))
-    places_ids = user['favorites']
-    places = place_collection.find_places_by_ids(places_ids)
+        values.set_value('places', "favorite", str(user_id))
+        user = user_collection.get_user_by_tg_id(int(user_id))
 
-    if call.data.find("place_id") != -1:
-        await show_place(call, bot)
-    else:
-        if call.data.find("next") != -1:
-            pos = call.data[len("next"):]
-        if call.data.find("prev") != -1:
-            pos = call.data[len("prev"):]
+        if user is None:
+            raise Exception(f"user is None for user_id: {user_id}")
 
-    await bot.send_message(chat_id=call.message.chat.id,
-                           text="Это твои избранные места!",
-                           reply_markup=keyboards.show_favorite_places(places, int(pos)))
+        places_ids = user['favorites']
+        places = place_collection.find_places_by_ids(places_ids)
+
+        if call.data.find("place_id") != -1:
+            await show_place(call, bot)
+        else:
+            if call.data.find("next") != -1:
+                pos = call.data[len("next"):]
+            if call.data.find("prev") != -1:
+                pos = call.data[len("prev"):]
+
+        await bot.send_message(chat_id=call.message.chat.id,
+                               text="Это твои избранные места!",
+                               reply_markup=keyboards.show_favorite_places(places, int(pos)))
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )
 
 
 async def favorite_change(call: CallbackQuery, bot: AsyncTeleBot):
-    user_id = call.from_user.id
-    chat_id = call.message.chat.id
-    states.set_state(PlaceStates.FavoriteDelete, str(user_id))
-    d = values.get_all_values_from_map('place_map', str(user_id))
+    try:
+        user_id = call.from_user.id
+        chat_id = call.message.chat.id
+        states.set_state(PlaceStates.FavoriteDelete, str(user_id))
+        d = values.get_all_values_from_map('place_map', str(user_id))
 
-    if call.data.find("delete_yes") != -1:
-        user = user_collection.get_user_by_tg_id(user_id)
-        place_id = call.data[len("delete_yes"):]
-        places_ids = user['favorites']
-        places_ids.remove(place_id)
-        user_collection.update_favorites(user_id, places_ids)
-        await show_cur(call, bot)
+        if call.data.find("delete_yes") != -1:
+            user = user_collection.get_user_by_tg_id(user_id)
 
-    if call.data.find("delete_no") != -1:
-        await show_cur(call, bot)
+            if user is None:
+                raise Exception(f"user is None for user_id: {user_id}")
 
-    if call.data.find("favorite_delete") != -1:
-        await functions.delete_message(chat_id, call.message.id, bot)
-        place_id = call.data[len("favorite_delete"):]
-        await bot.send_message(chat_id=chat_id,
-                               text="Ты точно хочешь удалить это место из избранного?",
-                               reply_markup=keyboards.favorite_delete_approve(place_id))
+            place_id = call.data[len("delete_yes"):]
+            places_ids = user['favorites']
+            places_ids.remove(place_id)
+            user_collection.update_favorites(user_id, places_ids)
+            await show_cur(call, bot)
 
-    if call.data.find("favorite_add") != -1:
-        user = user_collection.get_user_by_tg_id(user_id)
-        place_id = call.data[len("favorite_add"):]
-        places_ids = user['favorites']
-        places_ids.append(place_id)
-        user_collection.update_favorites(user_id, places_ids)
-        await delete_place_message(call, bot)
-        call.data = "place_id" + place_id
-        await show_place(call, bot)
+        if call.data.find("delete_no") != -1:
+            await show_cur(call, bot)
 
-        if d.get("favorite_add_id") is not None:
-            await functions.delete_message(chat_id=chat_id,
-                                           msg_id=int(d["favorite_add_id"]),
-                                           bot=bot
-                                           )
+        if call.data.find("favorite_delete") != -1:
+            await functions.delete_message(chat_id, call.message.id, bot)
+            place_id = call.data[len("favorite_delete"):]
+            await bot.send_message(chat_id=chat_id,
+                                   text="Ты точно хочешь удалить это место из избранного?",
+                                   reply_markup=keyboards.favorite_delete_approve(place_id))
 
-        message = await bot.send_message(
-            chat_id=call.message.chat.id,
-            text="Теперь ты всегда сможешь найти это место в <b><i>Избранное</i></b> в главном меню!",
-            parse_mode="html"
-        )
-        values.add_values_to_map('place_map', {"favorite_add_id": str(message.id)}, str(user_id))
+        if call.data.find("favorite_add") != -1:
+            user = user_collection.get_user_by_tg_id(user_id)
+
+            if user is None:
+                raise Exception(f"user is None for user_id: {user_id}")
+
+            place_id = call.data[len("favorite_add"):]
+            places_ids = user['favorites']
+            places_ids.append(place_id)
+            user_collection.update_favorites(user_id, places_ids)
+            await delete_place_message(call, bot)
+            call.data = "place_id" + place_id
+            await show_place(call, bot)
+
+            if d.get("favorite_add_id") is not None:
+                await functions.delete_message(chat_id=chat_id,
+                                               msg_id=int(d["favorite_add_id"]),
+                                               bot=bot
+                                               )
+
+            message = await bot.send_message(
+                chat_id=call.message.chat.id,
+                text="Теперь ты всегда сможешь найти это место в <b><i>Избранное</i></b> в главном меню!",
+                parse_mode="html"
+            )
+            values.add_values_to_map('place_map', {"favorite_add_id": str(message.id)}, str(user_id))
+    except Exception as exp:
+        user_id = str(call.from_user.id)
+        d = values.get_all_values_from_map('place_map', user_id)
+        logging.error(f"error: {exp}\n"
+                      f"function: {show_place.__name__}"
+                      f"user_id: {user_id}\n"
+                      f"dict: {d}\n"
+                      f"msg: {call}"
+                      )
+        traceback.print_stack()
+        await bot.send_message(text=error_case,
+                               chat_id=call.message.chat.id,
+                               parse_mode="html"
+                               )

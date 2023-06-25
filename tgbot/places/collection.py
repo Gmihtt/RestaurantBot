@@ -36,11 +36,6 @@ class PlaceCollection(Database):
         if kitchens:
             q['place.kitchens'] = {"$in": kitchens}
 
-        if filters.get('mid_price') is not None:
-            q['place.mid_price'] = {"$gte": int(filters['mid_price'])}
-        else:
-            q['place.mid_price'] = {"$gte": 400}
-
         if filters.get('rating') is not None:
             q['place.rating'] = {"$gte": float(filters['rating'])}
         else:
@@ -50,7 +45,16 @@ class PlaceCollection(Database):
         if place_types:
             q['place_types'] = {"$in": place_types}
         else:
-            q['place_types'] = {"$in": ["restaurant", "cafe"]}
+            place_types = ["restaurant", "cafe", "coffee_house"]
+            q['place_types'] = {"$in": place_types}
+
+        if filters.get('mid_price') is not None:
+            q['place.mid_price'] = {"$gte": int(filters['mid_price'])}
+        else:
+            if ("restaurant" or "bar") in place_types:
+                q['place.mid_price'] = {"$gte": 400}
+            elif "cafe" in place_types:
+                q['place.mid_price'] = {"$gte": 250}
 
         res_q = self.collection.find(q, skip=skip, limit=limit, )
         res = []
@@ -91,6 +95,13 @@ class PlaceCollection(Database):
 
     def get_places_count(self) -> int:
         return self.collection.count_documents({})
+
+    def find_all_places(self) -> List[place.Place]:
+        res_q = self.collection.find()
+        res = []
+        for doc in res_q:
+            res.append(place.convert_doc_to_place(doc))
+        return res
 
 
 place_collection = PlaceCollection()

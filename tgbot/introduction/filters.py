@@ -75,7 +75,7 @@ async def filter_kitchens(call: CallbackQuery, bot: AsyncTeleBot):
         values.delete_list('kitchens', user_id)
 
     if map_kitchens.get('kitchens_pos') is not None:
-        pos = int(map_kitchens.get('kitchens_pos'))
+        pos = int(map_kitchens['kitchens_pos'])
 
     if data == "next" or data == "back":
         if data == "next":
