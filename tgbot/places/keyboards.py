@@ -2,7 +2,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import List
 
 from tgbot.config import max_distance
-from tgbot.places.place import Place, PlaceType, Coordinates
+from tgbot.places.place import Place, Coordinates
 from tgbot.utils import functions
 from tgbot.utils.functions import count_distance
 
@@ -63,16 +63,16 @@ def show_place(place_id: str,
                site: bool,
                favorite: bool) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("Показать на карте", callback_data="place_position"))
+    markup.add(InlineKeyboardButton("📍Показать на карте", callback_data="place_position"))
     if phone:
-        markup.add(InlineKeyboardButton("Позвонить", callback_data="place_phone"))
+        markup.add(InlineKeyboardButton("📞 Позвонить", callback_data="place_phone"))
     if site:
-        markup.add(InlineKeyboardButton("Сайт", callback_data="place_site"))
+        markup.add(InlineKeyboardButton("🌐 Сайт", callback_data="place_site"))
     if favorite:
-        markup.add(InlineKeyboardButton("Удалить из избранного", callback_data="favorite_delete" + place_id))
+        markup.add(InlineKeyboardButton("💔 Удалить из избранного", callback_data="favorite_delete" + place_id))
     if not favorite:
-        markup.add(InlineKeyboardButton("Добавить в избранное", callback_data="favorite_add" + place_id))
-    markup.add(InlineKeyboardButton("Назад", callback_data="places_cur"))
+        markup.add(InlineKeyboardButton("❤️ Добавить в избранное", callback_data="favorite_add" + place_id))
+    markup.add(InlineKeyboardButton("⬅️ Назад", callback_data="places_cur"))
     return markup
 
 
