@@ -12,7 +12,7 @@ from tgbot.places.collection import place_collection
 from tgbot.places.place import Coordinates
 from tgbot.places.pretty_show import pretty_show_place
 from tgbot.texts import error_case
-from tgbot.utils.functions import send_files, count_distance
+from tgbot.utils.functions import send_files, count_distance, place_count_str
 from tgbot.places.states import PlaceStates
 from tgbot.utils import states, values, functions
 from tgbot.config import max_distance
@@ -246,7 +246,8 @@ async def show_places(
             city = places[0]['city']
             user_collection.set_city(int(user_id), city)
 
-        text = f"Я нашёл {count} заведений рядом с тобой.\n" \
+        russian_text = place_count_str(int(count))
+        text = f"Я нашёл {russian_text} рядом с тобой.\n" \
                f"Просто выбирай желаемое место и нажимай на его название.\n"
 
         text_filters = await show_filters(user_id)

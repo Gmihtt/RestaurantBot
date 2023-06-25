@@ -130,3 +130,12 @@ def place_count_str(count: int):
         return str(count) + ' заведения'
     if 5 <= count % 10 <= 9:
         return str(count) + ' заведений'
+
+
+def add_hookah_to_features():
+    places = place_collection.find_all_places()
+    for place in places:
+        if "lounge" in place['place_types'] and place.get('place') is not None:
+            if "Кальян-бар" not in place['place']['features']:
+                place['place']['features'].append("Кальян-бар")
+                place_collection.update_place(place)

@@ -96,5 +96,12 @@ class PlaceCollection(Database):
     def get_places_count(self) -> int:
         return self.collection.count_documents({})
 
+    def find_all_places(self) -> List[place.Place]:
+        res_q = self.collection.find()
+        res = []
+        for doc in res_q:
+            res.append(place.convert_doc_to_place(doc))
+        return res
+
 
 place_collection = PlaceCollection()

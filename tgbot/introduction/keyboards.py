@@ -71,7 +71,7 @@ def main_menu(favorites: bool):
     markup.add(InlineKeyboardButton('Найти место', callback_data="find_place"), row_width=1)
     markup.add(InlineKeyboardButton('Параметры поиска', callback_data="filters"), row_width=1)
     if favorites:
-        markup.add(InlineKeyboardButton('Избранное', callback_data="favorites"), row_width=1)
+        markup.add(InlineKeyboardButton('❤️Избранное', callback_data="favorites"), row_width=1)
     return markup
 
 

@@ -8,6 +8,7 @@ from tgbot.handlers import handlers
 from tgbot import config
 import logging
 
+from tgbot.utils.functions import add_hookah_to_features
 
 logging.basicConfig(filename='db.log',
                     filemode='w',
@@ -16,6 +17,10 @@ logging.basicConfig(filename='db.log',
                     level=logging.INFO)
 bot = AsyncTeleBot(config.TOKEN)
 
+add_hookah_to_features()
+
+print("Bot: Start")
+logging.info("Bot: Start")
 
 def register_handlers():
     handlers(bot)
