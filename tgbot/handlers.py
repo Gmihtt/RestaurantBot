@@ -8,4 +8,4 @@ from tgbot.posts.handlers import post_handlers
 def handlers(bot: AsyncTeleBot):
     intro_handlers(bot)
     place_handlers(bot)
-    post_handlers(bot)
+    #post_handlers(bot)
