@@ -37,7 +37,7 @@ def filters(vegan: bool, business: bool, hookah: bool):
                row_width=2)
     markup.add(InlineKeyboardButton('🚮 Сбросить фильтры', callback_data="filters_drop"),
                InlineKeyboardButton('🔎 Перейти к поиску', callback_data="find_place"),
-               InlineKeyboardButton('🏠 В меню', callback_data="main_menu"),
+               InlineKeyboardButton('В меню', callback_data="main_menu"),
                row_width=1)
     return markup
 
@@ -113,7 +113,7 @@ def find_place():
 
 def back_main_menu():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton('🏠️ В меню', callback_data="main_menu"), row_width=1)
+    markup.add(InlineKeyboardButton('В меню', callback_data="main_menu"), row_width=1)
     return markup
 
 

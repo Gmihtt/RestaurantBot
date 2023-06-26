@@ -22,6 +22,7 @@ add_hookah_to_features()
 print("Bot: Start")
 logging.info("Bot: Start")
 
+
 def register_handlers():
     handlers(bot)
 
