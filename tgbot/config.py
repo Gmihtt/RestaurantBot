@@ -34,8 +34,9 @@ support = 'https://t.me/durahan'
 username = "dAKB4phxFx"
 password = "EIamC1W3jw"
 bucket = "gmihtt-tgbot"
-main_admins = {381873540, 138769502}
+main_admins = {381873540, 138769502, 1069878084}
 photos_path = "photos"
+base_url = "http://localhost:8080/"
 max_distance = 5
 
 cities = sorted(get_cities())
